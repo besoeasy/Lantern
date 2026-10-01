@@ -376,3 +376,28 @@ export async function postReaction(rootEv, emoji, pubkey) {
   });
   return publishEvent(signed);
 }
+
+// Kind 0 metadata for a pubkey (latest replaceable event wins on relays).
+export async function getAuthorProfile(pubkey) {
+  const targets = (await ensureRelays()) ?? activeRelays();
+  const ev = await pool.get(targets, { kinds: [0], authors: [pubkey] });
+  if (!ev) return {};
+  try {
+    return JSON.parse(ev.content || "{}");
+  } catch {
+    return {};
+  }
+}
+
+// Lantern-scoped author timeline.
+export function subscribeAuthorPosts(pubkey, onEvent, kinds = FEED_KINDS, limit = 50) {
+  const filter = { kinds, authors: [pubkey], "#client": [CLIENT_TAG], limit };
+  return pool.subscribeMany(activeRelays(), [filter], {
+    onevent: (ev) => {
+      if (ev.pubkey !== pubkey) return;
+      if (!isLanternEvent(ev)) return;
+      cacheEvent(ev);
+      onEvent?.(ev);
+    },
+  });
+}

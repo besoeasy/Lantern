@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted } from "vue";
 import { RouterView, useRoute } from "vue-router";
-import { House, Plus, Settings } from "@lucide/vue";
+import { House, Plus, Settings, User } from "@lucide/vue";
 import { useUserStore } from "@/stores/user.js";
 
 const route = useRoute();
@@ -27,6 +27,10 @@ onMounted(() => user.autoLogin());
       </RouterLink>
       <RouterLink to="/compose" class="tab create" title="Create" :class="{ on: route.name === 'compose' }">
         <span class="plus"><Plus /></span>
+      </RouterLink>
+      <RouterLink to="/profile" class="tab" :class="{ on: route.name === 'profile' }">
+        <User />
+        <span>Profile</span>
       </RouterLink>
       <RouterLink to="/settings" class="tab" :class="{ on: route.name === 'settings' }">
         <Settings />
