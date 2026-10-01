@@ -12,6 +12,7 @@ import { FEED_KINDS, ensureRelays } from "@/lib/relays.js";
 import { getCachedAuthorPosts } from "@/lib/db.js";
 import { ipfsObjectUrl } from "@/lib/ipfs.js";
 import { useCopy } from "@/composables/useCopy.js";
+import { useEventList } from "@/composables/useEventList.js";
 import { useUserStore } from "@/stores/user.js";
 import PostCard from "@/components/PostCard.vue";
 import ReactionBar from "@/components/ReactionBar.vue";
@@ -25,12 +26,11 @@ const profile = ref({});
 const nip05State = ref(""); // "", "ok", "bad"
 const avatarUrl = ref("");
 const bannerUrl = ref("");
-const events = ref([]);
 const loadingProfile = ref(true);
 const loadingPosts = ref(true);
 const loginErr = ref("");
 const { copied: copiedNpub, copy: copyText } = useCopy();
-const seen = new Set();
+const { items: events, add, reset: resetEvents } = useEventList();
 let sub = null;
 
 // hex, npub or nprofile; empty when viewing self while logged out
@@ -67,13 +67,6 @@ async function verifyNip05(nip05, pubkey) {
   if (!res.ok) return false;
   const data = await res.json();
   return data?.names?.[name] === pubkey;
-}
-
-function add(ev) {
-  if (seen.has(ev.id)) return;
-  seen.add(ev.id);
-  events.value.push(ev);
-  events.value.sort((a, b) => b.created_at - a.created_at);
 }
 
 function goPost(id) {
@@ -120,8 +113,7 @@ watch(
   async ([id]) => {
     sub?.close?.();
     sub = null;
-    events.value = [];
-    seen.clear();
+    resetEvents();
     profile.value = {};
     nip05State.value = "";
     avatarUrl.value = "";

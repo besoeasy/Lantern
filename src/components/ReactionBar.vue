@@ -1,38 +1,32 @@
 <script setup>
 import { computed, onUnmounted, ref, watch } from "vue";
-import { subscribeReactions, postReaction } from "@/lib/nostr.js";
+import { subscribeReactions, postReaction, expiryOf } from "@/lib/nostr.js";
+import { useEventList } from "@/composables/useEventList.js";
 import { useUserStore } from "@/stores/user.js";
 
 const props = defineProps({ ev: Object });
 const user = useUserStore();
 
 const PRESETS = ["❤️", "🔥", "👍", "🎉", "😮", "😢"];
-const all = ref([]);
-const seen = new Set();
-const busy = ref("");
-const msg = ref("");
-let sub = null;
-
-function add(ev) {
-  if (!isFresh(ev)) return;
-  if (seen.has(ev.id)) return;
-  seen.add(ev.id);
-  all.value.push(ev);
-}
 
 // Skip anything already expired (relays shouldn't serve these, but be safe).
 function isFresh(ev) {
-  const exp = (ev.tags || []).find(([t]) => t === "expiration")?.[1];
-  return !exp || Number(exp) > Math.floor(Date.now() / 1000);
+  const exp = expiryOf(ev);
+  return !exp || exp > Math.floor(Date.now() / 1000);
 }
+
+// Arrival order: only the per-emoji counts are shown, so no sort is needed.
+const { items: all, add, reset } = useEventList({ order: null, guard: isFresh });
+const busy = ref("");
+const msg = ref("");
+let sub = null;
 
 watch(
   () => props.ev?.id,
   (id) => {
     sub?.close?.();
     sub = null;
-    all.value = [];
-    seen.clear();
+    reset();
     msg.value = "";
     if (!id) return;
     sub = subscribeReactions(props.ev, add);

@@ -1,5 +1,6 @@
 import { SimplePool, getEventHash, nip19 } from "nostr-tools";
 import { DEFAULT_RELAYS, CLIENT_TAG, POW_TARGET, FEED_KINDS, CONTENT_TTL_SECONDS, activeRelays, ensureRelays } from "./relays.js";
+import { tagVal } from "./event.js";
 import { cacheEvent } from "./db.js";
 import { db } from "./db.js";
 
@@ -200,9 +201,8 @@ export function ipfsToHttp(ipfsUrl) {
   return ipfsUrl;
 }
 
-export function tagVal(ev, name) {
-  return ev.tags?.find(([t]) => t === name)?.[1] || "";
-}
+// Tag readers live in event.js so db.js can share them without an import cycle.
+export { tagVal, expiryOf } from "./event.js";
 
 // Hashtag (`t`) showcase for under-post pills. Deduped, capped at `limit`.
 // The `music` genre marker on 36787 tracks is structural (Amethyst convention),

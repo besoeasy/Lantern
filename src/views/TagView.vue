@@ -5,22 +5,15 @@ import { ArrowLeft } from "@lucide/vue";
 import { subscribeTag } from "@/lib/nostr.js";
 import { ensureRelays } from "@/lib/relays.js";
 import { getCachedTag } from "@/lib/db.js";
+import { useEventList } from "@/composables/useEventList.js";
 import PostCard from "@/components/PostCard.vue";
 import ReactionBar from "@/components/ReactionBar.vue";
 
 const route = useRoute();
 const router = useRouter();
-const events = ref([]);
 const loading = ref(true);
-const seen = new Set();
+const { items: events, add, reset } = useEventList();
 let sub = null;
-
-function add(ev) {
-  if (seen.has(ev.id)) return;
-  seen.add(ev.id);
-  events.value.push(ev);
-  events.value.sort((a, b) => b.created_at - a.created_at);
-}
 
 function goPost(id) {
   router.push(`/post/${id}`);
@@ -36,8 +29,7 @@ watch(
   async (tag) => {
     sub?.close?.();
     sub = null;
-    events.value = [];
-    seen.clear();
+    reset();
     if (!tag) return;
     loading.value = true;
     const cached = await getCachedTag(tag).catch(() => []);

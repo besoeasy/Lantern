@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { ArrowLeft, Braces, Copy, Hourglass, Link2 } from "@lucide/vue";
-import { getEventById } from "@/lib/nostr.js";
+import { getEventById, expiryOf } from "@/lib/nostr.js";
 import { useCopy } from "@/composables/useCopy.js";
 import PostCard from "@/components/PostCard.vue";
 import CommentSection from "@/components/CommentSection.vue";
@@ -19,9 +19,8 @@ let ticker = null;
 const rawJson = computed(() => (ev.value ? JSON.stringify(ev.value, null, 2) : ""));
 
 const expiryMs = computed(() => {
-  const exp = ev.value?.tags?.find(([t]) => t === "expiration")?.[1];
-  const ts = Number(exp) * 1000;
-  return Number.isFinite(ts) && ts > 0 ? ts : 0;
+  const sec = expiryOf(ev.value);
+  return sec > 0 ? sec * 1000 : 0;
 });
 
 // Live D/H/M countdown till the post is gone (NIP-40 expiry)

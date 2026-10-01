@@ -1,4 +1,5 @@
 import Dexie from "dexie";
+import { tagVal } from "./event.js";
 
 export const db = new Dexie("lantern");
 db.version(1).stores({
@@ -11,7 +12,7 @@ const THIRTY_DAYS = 30 * 24 * 60 * 60;
 
 // NIP-40: an event past its `expiration` tag is dead — never serve it locally.
 function isExpired(ev, nowSec = Math.floor(Date.now() / 1000)) {
-  const exp = (ev.tags || []).find(([t]) => t === "expiration")?.[1];
+  const exp = tagVal(ev, "expiration");
   return !!exp && Number(exp) <= nowSec;
 }
 

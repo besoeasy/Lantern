@@ -3,28 +3,25 @@ import { defineStore } from "pinia";
 import { isLanternEvent, subscribeFeed } from "@/lib/nostr.js";
 import { FEED_KINDS, ensureRelays } from "@/lib/relays.js";
 import { getCachedFeed, pruneCache } from "@/lib/db.js";
+import { useEventList } from "@/composables/useEventList.js";
 
 export const useFeedStore = defineStore("feed", () => {
-  const events = ref([]);
   const loading = ref(true);
-  const seen = new Set();
+  const {
+    items: events,
+    add,
+    reset,
+  } = useEventList({
+    // Defense in depth: relays may ignore the `#client` filter, and the Dexie
+    // cache still holds pre-filter posts. Only this client id renders.
+    guard: isLanternEvent,
+    cap: 500,
+  });
   let closer = null;
-
-  function add(ev) {
-    // Defense in depth: relays may ignore the `#client` filter, and the
-    // Dexie cache still holds pre-filter posts. Only this client id renders.
-    if (!isLanternEvent(ev)) return;
-    if (seen.has(ev.id)) return;
-    seen.add(ev.id);
-    events.value.push(ev);
-    events.value.sort((a, b) => b.created_at - a.created_at);
-    if (events.value.length > 500) events.value.length = 500;
-  }
 
   async function start(kinds = FEED_KINDS) {
     loading.value = true;
-    events.value = [];
-    seen.clear();
+    reset();
     const cached = await getCachedFeed(kinds).catch(() => []);
     cached.forEach(add);
     loading.value = false;

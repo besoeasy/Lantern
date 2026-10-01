@@ -1,32 +1,31 @@
 <script setup>
 import { onUnmounted, ref, watch } from "vue";
 import { subscribeComments, postComment, shortPk, isCommentOn } from "@/lib/nostr.js";
+import { useEventList } from "@/composables/useEventList.js";
 import { useUserStore } from "@/stores/user.js";
 
 const props = defineProps({ root: Object });
 const user = useUserStore();
-const comments = ref([]);
-const seen = new Set();
+// Comments read oldest-first. Second guard at render layer: only replies
+// tagging this post show, since relays routinely ignore tag filters.
+const {
+  items: comments,
+  add,
+  reset,
+} = useEventList({
+  order: "asc",
+  guard: (ev) => isCommentOn(ev, props.root),
+});
 const text = ref("");
 const busy = ref(false);
 const msg = ref("");
 let sub = null;
 
-function add(ev) {
-  // Second guard at render layer: only replies tagging this post show.
-  if (!isCommentOn(ev, props.root)) return;
-  if (seen.has(ev.id)) return;
-  seen.add(ev.id);
-  comments.value.push(ev);
-  comments.value.sort((a, b) => a.created_at - b.created_at);
-}
-
 watch(
   () => props.root?.id,
   (id) => {
     sub?.close?.();
-    comments.value = [];
-    seen.clear();
+    reset();
     if (!id) return;
     sub = subscribeComments(props.root, add);
   },
