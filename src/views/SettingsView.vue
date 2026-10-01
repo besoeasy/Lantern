@@ -1,16 +1,15 @@
 <script setup>
 import { computed, ref } from "vue";
-import { Plus, Trash2, RotateCcw, Activity, Server, Radio, CodeXml, ExternalLink } from "@lucide/vue";
+import { Trash2, RotateCcw, Activity, Server, Radio, CodeXml, ExternalLink } from "@lucide/vue";
 import { useSettingsStore } from "@/stores/settings.js";
 import { useFeedStore } from "@/stores/feed.js";
+import ServerList from "@/components/ServerList.vue";
 
 const s = useSettingsStore();
 const feed = useFeedStore();
 
-const relayInput = ref("");
-const originlessInput = ref("");
-const relayErr = ref("");
 const originlessErr = ref("");
+const relayErr = ref("");
 const copy = ref("");
 
 const relays = computed(() => {
@@ -20,24 +19,18 @@ const relays = computed(() => {
 
 const aliveSet = computed(() => new Set(s.health.ok));
 
-function addRelay() {
+function addRelay(url) {
   relayErr.value = "";
-  if (!relayInput.value.trim()) return;
-  if (!s.addRelayUrl(relayInput.value)) {
+  if (!s.addRelayUrl(url)) {
     relayErr.value = "Already in your list or not a valid wss:// URL.";
-    return;
   }
-  relayInput.value = "";
 }
 
-function addOriginless() {
+function addOriginless(url) {
   originlessErr.value = "";
-  if (!originlessInput.value.trim()) return;
-  if (!s.addOriginlessServer(originlessInput.value)) {
+  if (!s.addOriginlessServer(url)) {
     originlessErr.value = "Already configured.";
-    return;
   }
-  originlessInput.value = "";
 }
 
 async function testOriginless(url) {
@@ -77,8 +70,14 @@ let copyTimer;
         Lantern only publishes <code>ipfs://CID</code>.
       </p>
 
-      <ul class="rows">
-        <li v-for="url in s.settings.originless" :key="url" class="row">
+      <ServerList
+        :items="s.settings.originless"
+        placeholder="https://my-originless.example.com"
+        submit-label="Add"
+        :error="originlessErr"
+        @add="addOriginless"
+      >
+        <template #default="{ url }">
           <code class="url">{{ url }}</code>
           <span class="badge" :class="{ last: url === s.settings.originless[0] }">
             {{ url === s.settings.originless[0] ? "primary" : "backup" }}
@@ -94,14 +93,8 @@ let copyTimer;
           >
             <Trash2 />
           </button>
-        </li>
-      </ul>
-
-      <form class="add" @submit.prevent="addOriginless">
-        <input v-model="originlessInput" placeholder="https://my-originless.example.com" />
-        <button class="primary" type="submit"><Plus /><span>Add</span></button>
-      </form>
-      <p v-if="originlessErr" class="err">{{ originlessErr }}</p>
+        </template>
+      </ServerList>
       <p v-if="copy" class="note">{{ copy }}</p>
     </section>
 
@@ -115,8 +108,14 @@ let copyTimer;
         Lantern probes each relay before subscribing. Disabled relays stay saved but are skipped.
       </p>
 
-      <ul class="rows">
-        <li v-for="url in relays" :key="url" class="row">
+      <ServerList
+        :items="relays"
+        placeholder="wss://relay.example.com"
+        submit-label="Add relay"
+        :error="relayErr"
+        @add="addRelay"
+      >
+        <template #default="{ url }">
           <span class="dot" :class="{ on: aliveSet.has(url) && !s.disabledOf(url) }" />
           <code class="url">{{ url }}</code>
           <span v-if="s.extraOf(url)" class="badge custom">custom</span>
@@ -135,14 +134,8 @@ let copyTimer;
           >
             <Trash2 />
           </button>
-        </li>
-      </ul>
-
-      <form class="add" @submit.prevent="addRelay">
-        <input v-model="relayInput" placeholder="wss://relay.example.com" />
-        <button class="primary" type="submit"><Plus /><span>Add relay</span></button>
-      </form>
-      <p v-if="relayErr" class="err">{{ relayErr }}</p>
+        </template>
+      </ServerList>
     </section>
 
     <section class="card foot">
@@ -224,22 +217,6 @@ h2 {
   border-radius: 5px;
   font-size: 11.5px;
 }
-.rows {
-  list-style: none;
-  margin: 0 0 12px;
-  padding: 0;
-  display: grid;
-  gap: 6px;
-}
-.row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 11px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
-}
 .url {
   flex: 1;
   font-size: 12px;
@@ -276,42 +253,6 @@ h2 {
 .badge.custom {
   background: #dbeafe;
   color: #1d4ed8;
-}
-.add {
-  display: flex;
-  gap: 8px;
-}
-.add input {
-  flex: 1;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 10px 12px;
-  font-size: 13px;
-  font-family: inherit;
-  outline: none;
-  min-width: 0;
-}
-.add input:focus {
-  border-color: rgba(0, 0, 0, 0.28);
-}
-.primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--ink);
-  color: #fff;
-  border: 0;
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.primary svg {
-  width: 15px;
-  height: 15px;
-  stroke-width: 2.2;
 }
 .ghost {
   display: inline-flex;
@@ -389,11 +330,6 @@ h2 {
 }
 .switch input:checked + .track .knob {
   transform: translateX(16px);
-}
-.err {
-  font-size: 12.5px;
-  color: #dc2626;
-  margin: 8px 0 0;
 }
 .note {
   font-size: 12.5px;
