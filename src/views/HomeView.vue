@@ -168,9 +168,7 @@ function openPost(e, id) {
   overflow-x: auto;
   margin: -14px -14px 0;
   padding: 8px 14px;
-  background: rgba(246, 246, 247, 0.8);
-  backdrop-filter: saturate(1.6) blur(16px);
-  -webkit-backdrop-filter: saturate(1.6) blur(16px);
+  background: #fff;
   border-bottom: 1px solid var(--line);
   scrollbar-width: none;
 }
