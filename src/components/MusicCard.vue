@@ -1,7 +1,7 @@
 <script setup>
-import { shortPk, tagVal } from '@/lib/nostr.js'
-import IpfsMedia from './IpfsMedia.vue'
-defineProps({ ev: Object })
+import { shortPk, tagVal } from "@/lib/nostr.js";
+import IpfsMedia from "./IpfsMedia.vue";
+defineProps({ ev: Object });
 </script>
 
 <template>
@@ -10,7 +10,7 @@ defineProps({ ev: Object })
       <div class="disc"><span /></div>
       <div>
         <div class="k">Track</div>
-        <div class="mime">{{ tagVal(ev, 'm') || 'audio' }}</div>
+        <div class="mime">{{ tagVal(ev, "m") || "audio" }}</div>
       </div>
     </div>
     <IpfsMedia :src="tagVal(ev, 'url')" kind="audio" />
@@ -39,8 +39,7 @@ defineProps({ ev: Object })
   height: 44px;
   border-radius: 50%;
   background:
-    radial-gradient(circle, #fafafa 4px, transparent 5px),
-    conic-gradient(#71717a, #3f3f46, #71717a);
+    radial-gradient(circle, #fafafa 4px, transparent 5px), conic-gradient(#71717a, #3f3f46, #71717a);
   flex-shrink: 0;
 }
 .k {

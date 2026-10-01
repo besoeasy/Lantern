@@ -1,7 +1,7 @@
 <script setup>
-import { imetaList, shortPk, tagVal } from '@/lib/nostr.js'
-import IpfsMedia from './IpfsMedia.vue'
-defineProps({ ev: Object })
+import { imetaList, shortPk, tagVal } from "@/lib/nostr.js";
+import IpfsMedia from "./IpfsMedia.vue";
+defineProps({ ev: Object });
 </script>
 
 <template>
@@ -12,7 +12,7 @@ defineProps({ ev: Object })
       </div>
       <div class="who">
         <div class="pk">{{ shortPk(ev.pubkey) }}</div>
-        <div class="title" v-if="tagVal(ev, 'title')">{{ tagVal(ev, 'title') }}</div>
+        <div class="title" v-if="tagVal(ev, 'title')">{{ tagVal(ev, "title") }}</div>
       </div>
     </header>
     <div class="gallery">

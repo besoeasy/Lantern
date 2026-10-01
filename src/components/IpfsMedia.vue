@@ -1,35 +1,41 @@
 <script setup>
-import { ref, watch } from 'vue'
-import { ipfsObjectUrl } from '@/lib/ipfs.js'
+import { ref, watch } from "vue";
+import { ipfsObjectUrl } from "@/lib/ipfs.js";
 
-const props = defineProps({ src: String, kind: { type: String, default: 'img' } })
-const objUrl = ref('')
-const err = ref('')
+const props = defineProps({ src: String, kind: { type: String, default: "img" } });
+const objUrl = ref("");
+const err = ref("");
 
 watch(
   () => props.src,
   async (s) => {
-    objUrl.value = ''
-    err.value = ''
-    if (!s) return
-    if (!s.startsWith('ipfs://')) {
-      objUrl.value = s
-      return
+    objUrl.value = "";
+    err.value = "";
+    if (!s) return;
+    if (!s.startsWith("ipfs://")) {
+      objUrl.value = s;
+      return;
     }
     try {
-      objUrl.value = await ipfsObjectUrl(s)
+      objUrl.value = await ipfsObjectUrl(s);
     } catch {
-      err.value = 'Could not fetch from IPFS'
+      err.value = "Could not fetch from IPFS";
     }
   },
   { immediate: true },
-)
+);
 </script>
 
 <template>
   <div class="media">
     <img v-if="kind === 'img' && objUrl" :src="objUrl" loading="lazy" />
-    <video v-else-if="kind === 'video' && objUrl" :src="objUrl" controls playsinline preload="metadata" />
+    <video
+      v-else-if="kind === 'video' && objUrl"
+      :src="objUrl"
+      controls
+      playsinline
+      preload="metadata"
+    />
     <audio v-else-if="kind === 'audio' && objUrl" :src="objUrl" controls preload="metadata" />
     <div v-else-if="err" class="state err">{{ err }}</div>
     <div v-else class="state shimmer" />

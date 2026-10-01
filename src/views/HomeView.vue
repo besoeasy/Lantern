@@ -1,22 +1,22 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { Copy, ExternalLink } from '@lucide/vue'
-import { useFeedStore } from '@/stores/feed.js'
-import { useUserStore } from '@/stores/user.js'
-import Composer from '@/components/Composer.vue'
-import NoteCard from '@/components/NoteCard.vue'
-import PictureCard from '@/components/PictureCard.vue'
-import VideoCard from '@/components/VideoCard.vue'
-import ArticleCard from '@/components/ArticleCard.vue'
-import MusicCard from '@/components/MusicCard.vue'
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { Copy, ExternalLink } from "@lucide/vue";
+import { useFeedStore } from "@/stores/feed.js";
+import { useUserStore } from "@/stores/user.js";
+import Composer from "@/components/Composer.vue";
+import NoteCard from "@/components/NoteCard.vue";
+import PictureCard from "@/components/PictureCard.vue";
+import VideoCard from "@/components/VideoCard.vue";
+import ArticleCard from "@/components/ArticleCard.vue";
+import MusicCard from "@/components/MusicCard.vue";
 
-const feed = useFeedStore()
-const user = useUserStore()
-const route = useRoute()
-const router = useRouter()
-const filter = ref(route.query.tab || 'all')
-const loginErr = ref('')
+const feed = useFeedStore();
+const user = useUserStore();
+const route = useRoute();
+const router = useRouter();
+const filter = ref(route.query.tab || "all");
+const loginErr = ref("");
 
 const FILTERS = {
   all: null,
@@ -25,48 +25,48 @@ const FILTERS = {
   videos: [21, 22],
   blogs: [30023],
   music: [1063],
-}
+};
 
 const visible = computed(() => {
-  const kinds = FILTERS[filter.value]
-  if (!kinds) return feed.events
-  return feed.events.filter((e) => kinds.includes(e.kind))
-})
+  const kinds = FILTERS[filter.value];
+  if (!kinds) return feed.events;
+  return feed.events.filter((e) => kinds.includes(e.kind));
+});
 
 watch(
   () => route.query.tab,
   (t) => {
-    if (t && FILTERS[t] !== undefined) filter.value = t
-    else if (!t) filter.value = 'all'
+    if (t && FILTERS[t] !== undefined) filter.value = t;
+    else if (!t) filter.value = "all";
   },
-)
+);
 
 function setFilter(k) {
-  filter.value = k
-  router.replace({ query: { ...route.query, tab: k === 'all' ? undefined : k } })
+  filter.value = k;
+  router.replace({ query: { ...route.query, tab: k === "all" ? undefined : k } });
 }
 
-onMounted(() => feed.start())
-onUnmounted(() => feed.stop())
+onMounted(() => feed.start());
+onUnmounted(() => feed.stop());
 
 async function login() {
-  loginErr.value = ''
+  loginErr.value = "";
   try {
-    await user.login()
+    await user.login();
   } catch (e) {
-    loginErr.value = e.message
+    loginErr.value = e.message;
   }
 }
 
 function postUrl(id) {
-  return `${location.origin}${location.pathname}#/post/${id}`
+  return `${location.origin}${location.pathname}#/post/${id}`;
 }
 
 async function copyLink(id) {
   try {
-    await navigator.clipboard.writeText(postUrl(id))
+    await navigator.clipboard.writeText(postUrl(id));
   } catch {
-    prompt('Copy post URL:', postUrl(id))
+    prompt("Copy post URL:", postUrl(id));
   }
 }
 </script>
@@ -78,7 +78,7 @@ async function copyLink(id) {
         <strong>Join the feed</strong>
         <span>Connect a NIP-07 extension to post & comment.</span>
       </div>
-      <button @click="login" :disabled="user.busy">{{ user.busy ? '…' : 'Login' }}</button>
+      <button @click="login" :disabled="user.busy">{{ user.busy ? "…" : "Login" }}</button>
     </div>
     <p v-if="loginErr" class="err">{{ loginErr }}</p>
 

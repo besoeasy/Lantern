@@ -1,6 +1,7 @@
-// Originless upload -> IPFS CID, then Lantern uses ipfs://CID only.
-// Docs: https://github.com/besoeasy/originless (default https://originless.space/)
-const SERVER = "https://originless.space";
+// Upload to a user-configured Originless server -> IPFS CID.
+// Lantern only ever stores ipfs://CID in event tags (plan.md spec 4).
+// Docs: https://github.com/besoeasy/originless
+import { getSettings } from "./settings.js";
 
 let heliaNode = null;
 
@@ -11,16 +12,34 @@ async function getHelia() {
   return heliaNode;
 }
 
-export async function uploadFile(file) {
+export function originlessServers() {
+  return getSettings().originless;
+}
+
+async function uploadTo(server, file) {
   const form = new FormData();
-  form.append("file", file);
-  const res = await fetch(`${SERVER}/upload`, { method: "POST", body: form });
-  if (!res.ok) throw new Error(`originless upload failed: ${res.status}`);
-  const data = await res.json().catch(() => ({}));
-  const cid = data.cid || data.hash || data.ipfs || data.url;
-  if (!cid) throw new Error("originless: no CID in response " + JSON.stringify(data).slice(0, 200));
-  const clean = String(cid).replace("ipfs://", "").split("/").pop();
-  return { cid: clean, url: `ipfs://${clean}` };
+  form.append("file", file, file.name);
+  const res = await fetch(`${server}/up`, { method: "POST", body: form });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  return res.json();
+}
+
+// Tries each configured server in order; the first CID that comes back wins.
+export async function uploadFile(file) {
+  const servers = originlessServers();
+  const errors = [];
+  for (const server of servers) {
+    try {
+      const data = await uploadTo(server, file);
+      const raw = data.cid || data.hash || data.ipfs || data.url;
+      if (!raw) throw new Error("no CID in response");
+      const clean = String(raw).replace("ipfs://", "").replace(/^.*\//, "");
+      return { cid: clean, url: `ipfs://${clean}`, server };
+    } catch (e) {
+      errors.push(`${server}: ${e.message}`);
+    }
+  }
+  throw new Error("All Originless servers failed → " + (errors.join(" | ") || "none configured"));
 }
 
 const objUrlCache = new Map();

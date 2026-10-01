@@ -1,43 +1,43 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { ArrowLeft } from '@lucide/vue'
-import { getEventById } from '@/lib/nostr.js'
-import NoteCard from '@/components/NoteCard.vue'
-import PictureCard from '@/components/PictureCard.vue'
-import VideoCard from '@/components/VideoCard.vue'
-import ArticleCard from '@/components/ArticleCard.vue'
-import MusicCard from '@/components/MusicCard.vue'
-import CommentSection from '@/components/CommentSection.vue'
+import { onMounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
+import { ArrowLeft } from "@lucide/vue";
+import { getEventById } from "@/lib/nostr.js";
+import NoteCard from "@/components/NoteCard.vue";
+import PictureCard from "@/components/PictureCard.vue";
+import VideoCard from "@/components/VideoCard.vue";
+import ArticleCard from "@/components/ArticleCard.vue";
+import MusicCard from "@/components/MusicCard.vue";
+import CommentSection from "@/components/CommentSection.vue";
 
-const route = useRoute()
-const ev = ref(null)
-const loading = ref(true)
-const err = ref('')
+const route = useRoute();
+const ev = ref(null);
+const loading = ref(true);
+const err = ref("");
 
 async function load(id) {
-  loading.value = true
-  err.value = ''
-  ev.value = null
+  loading.value = true;
+  err.value = "";
+  ev.value = null;
   try {
-    const found = await getEventById(id)
-    if (!found) err.value = 'Post not found on relays.'
-    else ev.value = found
+    const found = await getEventById(id);
+    if (!found) err.value = "Post not found on relays.";
+    else ev.value = found;
   } catch (e) {
-    err.value = e.message
+    err.value = e.message;
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
-onMounted(() => load(route.params.id))
+onMounted(() => load(route.params.id));
 watch(
   () => route.params.id,
   (id) => load(id),
-)
+);
 
 function shareUrl() {
-  return `${location.origin}${location.pathname}#/post/${route.params.id}`
+  return `${location.origin}${location.pathname}#/post/${route.params.id}`;
 }
 </script>
 

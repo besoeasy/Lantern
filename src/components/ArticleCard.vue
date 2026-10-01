@@ -1,14 +1,14 @@
 <script setup>
-import { shortPk, tagVal } from '@/lib/nostr.js'
-defineProps({ ev: Object })
+import { shortPk, tagVal } from "@/lib/nostr.js";
+defineProps({ ev: Object });
 </script>
 
 <template>
   <article class="card">
     <div class="k">Article</div>
-    <h3>{{ tagVal(ev, 'title') || 'Untitled' }}</h3>
-    <p class="sum" v-if="tagVal(ev, 'summary')">{{ tagVal(ev, 'summary') }}</p>
-    <p class="body">{{ ev.content.slice(0, 400) }}{{ ev.content.length > 400 ? '…' : '' }}</p>
+    <h3>{{ tagVal(ev, "title") || "Untitled" }}</h3>
+    <p class="sum" v-if="tagVal(ev, 'summary')">{{ tagVal(ev, "summary") }}</p>
+    <p class="body">{{ ev.content.slice(0, 400) }}{{ ev.content.length > 400 ? "…" : "" }}</p>
     <div class="pk">{{ shortPk(ev.pubkey) }}</div>
   </article>
 </template>
@@ -30,7 +30,7 @@ defineProps({ ev: Object })
 }
 h3 {
   margin: 8px 0 4px;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: Georgia, "Times New Roman", serif;
   font-size: 21px;
   letter-spacing: -0.02em;
   line-height: 1.25;

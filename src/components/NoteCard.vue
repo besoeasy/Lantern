@@ -1,15 +1,15 @@
 <script setup>
-import { imetaList, shortPk } from '@/lib/nostr.js'
-import IpfsMedia from './IpfsMedia.vue'
+import { imetaList, shortPk } from "@/lib/nostr.js";
+import IpfsMedia from "./IpfsMedia.vue";
 
-defineProps({ ev: Object })
+defineProps({ ev: Object });
 
 function time(t) {
-  const d = new Date(t * 1000)
-  const h = Math.floor((Date.now() - d) / 36e5)
-  if (h < 1) return 'now'
-  if (h < 24) return `${h}h`
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  const d = new Date(t * 1000);
+  const h = Math.floor((Date.now() - d) / 36e5);
+  if (h < 1) return "now";
+  if (h < 24) return `${h}h`;
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 </script>
 
@@ -24,7 +24,11 @@ function time(t) {
     </div>
     <p class="text">{{ ev.content }}</p>
     <div v-for="(m, i) in imetaList(ev)" :key="i" class="att">
-      <IpfsMedia v-if="m.url" :src="m.url" :kind="(m.m || '').startsWith('video') ? 'video' : 'img'" />
+      <IpfsMedia
+        v-if="m.url"
+        :src="m.url"
+        :kind="(m.m || '').startsWith('video') ? 'video' : 'img'"
+      />
     </div>
   </article>
 </template>

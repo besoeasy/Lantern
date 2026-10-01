@@ -1,54 +1,54 @@
 <script setup>
-import { onUnmounted, ref, watch } from 'vue'
-import { subscribeComments, postComment, shortPk } from '@/lib/nostr.js'
-import { useUserStore } from '@/stores/user.js'
+import { onUnmounted, ref, watch } from "vue";
+import { subscribeComments, postComment, shortPk } from "@/lib/nostr.js";
+import { useUserStore } from "@/stores/user.js";
 
-const props = defineProps({ root: Object })
-const user = useUserStore()
-const comments = ref([])
-const seen = new Set()
-const text = ref('')
-const busy = ref(false)
-const msg = ref('')
-let sub = null
+const props = defineProps({ root: Object });
+const user = useUserStore();
+const comments = ref([]);
+const seen = new Set();
+const text = ref("");
+const busy = ref(false);
+const msg = ref("");
+let sub = null;
 
 function add(ev) {
-  if (seen.has(ev.id)) return
-  seen.add(ev.id)
-  comments.value.push(ev)
-  comments.value.sort((a, b) => a.created_at - b.created_at)
+  if (seen.has(ev.id)) return;
+  seen.add(ev.id);
+  comments.value.push(ev);
+  comments.value.sort((a, b) => a.created_at - b.created_at);
 }
 
 watch(
   () => props.root?.id,
   (id) => {
-    sub?.close?.()
-    comments.value = []
-    seen.clear()
-    if (!id) return
-    sub = subscribeComments(props.root, add)
+    sub?.close?.();
+    comments.value = [];
+    seen.clear();
+    if (!id) return;
+    sub = subscribeComments(props.root, add);
   },
   { immediate: true },
-)
+);
 
-onUnmounted(() => sub?.close?.())
+onUnmounted(() => sub?.close?.());
 
 async function submit() {
-  msg.value = ''
+  msg.value = "";
   if (!user.pubkey) {
-    msg.value = 'Login to comment.'
-    return
+    msg.value = "Login to comment.";
+    return;
   }
-  if (!text.value.trim()) return
-  busy.value = true
+  if (!text.value.trim()) return;
+  busy.value = true;
   try {
-    await postComment(props.root, text.value.trim(), user.pubkey)
-    text.value = ''
-    msg.value = 'Comment published.'
+    await postComment(props.root, text.value.trim(), user.pubkey);
+    text.value = "";
+    msg.value = "Comment published.";
   } catch (e) {
-    msg.value = 'Failed: ' + e.message
+    msg.value = "Failed: " + e.message;
   } finally {
-    busy.value = false
+    busy.value = false;
   }
 }
 </script>
@@ -58,7 +58,7 @@ async function submit() {
     <h3>Comments ({{ comments.length }})</h3>
     <div class="form">
       <textarea v-model="text" rows="2" placeholder="Write a comment…" />
-      <button :disabled="busy" @click="submit">{{ busy ? 'Publishing…' : 'Comment' }}</button>
+      <button :disabled="busy" @click="submit">{{ busy ? "Publishing…" : "Comment" }}</button>
     </div>
     <p v-if="msg" class="msg">{{ msg }}</p>
     <div v-for="c in comments" :key="c.id" class="c">

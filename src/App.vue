@@ -1,17 +1,17 @@
 <script setup>
-import { computed } from 'vue'
-import { RouterView, useRoute } from 'vue-router'
-import { House, Images, Clapperboard, Music, Plus } from '@lucide/vue'
+import { computed } from "vue";
+import { RouterView, useRoute } from "vue-router";
+import { House, Images, Clapperboard, Music, Plus, Settings } from "@lucide/vue";
 
-const route = useRoute()
-const tab = computed(() => route.query.tab || 'all')
-const isActive = (t) => (t === 'all' ? tab.value === 'all' || !route.query.tab : tab.value === t)
+const route = useRoute();
+const tab = computed(() => route.query.tab || "all");
+const isActive = (t) => (t === "all" ? tab.value === "all" || !route.query.tab : tab.value === t);
 
 // #composer as an href is a router path in hash mode, so scroll manually
 function scrollToComposer() {
-  const el = document.getElementById('composer')
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  else window.scrollTo({ top: 0, behavior: 'smooth' })
+  const el = document.getElementById("composer");
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+  else window.scrollTo({ top: 0, behavior: "smooth" });
 }
 </script>
 
@@ -44,6 +44,10 @@ function scrollToComposer() {
         <Music />
         <span>Music</span>
       </RouterLink>
+      <RouterLink to="/settings" class="tab" :class="{ on: route.name === 'settings' }">
+        <Settings />
+        <span>Settings</span>
+      </RouterLink>
     </nav>
   </div>
 </template>
@@ -67,7 +71,7 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family:
-    -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Segoe UI', Roboto, sans-serif;
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 .shell {

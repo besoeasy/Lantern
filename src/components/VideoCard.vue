@@ -1,14 +1,14 @@
 <script setup>
-import { imetaList, shortPk, tagVal } from '@/lib/nostr.js'
-import IpfsMedia from './IpfsMedia.vue'
-defineProps({ ev: Object })
+import { imetaList, shortPk, tagVal } from "@/lib/nostr.js";
+import IpfsMedia from "./IpfsMedia.vue";
+defineProps({ ev: Object });
 </script>
 
 <template>
   <article class="card">
     <div class="head">
-      <span class="badge">{{ ev.kind === 22 ? 'Reel' : 'Video' }}</span>
-      <strong class="t">{{ tagVal(ev, 'title') || 'Untitled' }}</strong>
+      <span class="badge">{{ ev.kind === 22 ? "Reel" : "Video" }}</span>
+      <strong class="t">{{ tagVal(ev, "title") || "Untitled" }}</strong>
     </div>
     <div class="vids">
       <IpfsMedia v-for="(m, i) in imetaList(ev)" :key="i" :src="m.url" kind="video" />

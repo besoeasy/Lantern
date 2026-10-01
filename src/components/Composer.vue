@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref } from "vue";
 import {
   Paperclip,
   Send,
@@ -10,10 +10,10 @@ import {
   FileText,
   Music,
   Type,
-} from '@lucide/vue'
-import { signEvent, publishEvent } from '@/lib/nostr.js'
-import { uploadFile, sha256Hex } from '@/lib/ipfs.js'
-import { useUserStore } from '@/stores/user.js'
+} from "@lucide/vue";
+import { signEvent, publishEvent } from "@/lib/nostr.js";
+import { uploadFile, sha256Hex } from "@/lib/ipfs.js";
+import { useUserStore } from "@/stores/user.js";
 
 const ICONS = {
   tweet: Type,
@@ -23,92 +23,98 @@ const ICONS = {
   video: Video,
   blog: FileText,
   music: Music,
-}
+};
 
-const user = useUserStore()
-const tab = ref('tweet')
-const text = ref('')
-const title = ref('')
-const files = ref([])
-const busy = ref(false)
-const msg = ref('')
-const ok = ref(false)
+const user = useUserStore();
+const tab = ref("tweet");
+const text = ref("");
+const title = ref("");
+const files = ref([]);
+const busy = ref(false);
+const msg = ref("");
+const ok = ref(false);
 
 const tabs = [
-  ['tweet', 'Tweet'],
-  ['photo', 'Photo'],
-  ['gallery', 'Gallery'],
-  ['reel', 'Reel'],
-  ['video', 'Video'],
-  ['blog', 'Blog'],
-  ['music', 'Music'],
-]
+  ["tweet", "Tweet"],
+  ["photo", "Photo"],
+  ["gallery", "Gallery"],
+  ["reel", "Reel"],
+  ["video", "Video"],
+  ["blog", "Blog"],
+  ["music", "Music"],
+];
 
 function onFiles(e) {
-  files.value = [...e.target.files]
+  files.value = [...e.target.files];
 }
 
 async function buildImeta(file) {
-  const { url } = await uploadFile(file)
-  const x = await sha256Hex(file).catch(() => '')
-  const entry = [`url ${url}`, `m ${file.type || 'application/octet-stream'}`]
-  if (x) entry.push(`x ${x}`)
-  if (file.type.startsWith('image')) {
+  const { url } = await uploadFile(file);
+  const x = await sha256Hex(file).catch(() => "");
+  const entry = [`url ${url}`, `m ${file.type || "application/octet-stream"}`];
+  if (x) entry.push(`x ${x}`);
+  if (file.type.startsWith("image")) {
     try {
-      const bmp = await createImageBitmap(file)
-      entry.push(`dim ${bmp.width}x${bmp.height}`)
+      const bmp = await createImageBitmap(file);
+      entry.push(`dim ${bmp.width}x${bmp.height}`);
     } catch {}
   }
-  return ['imeta', ...entry]
+  return ["imeta", ...entry];
 }
 
 async function submit() {
-  msg.value = ''
-  ok.value = false
+  msg.value = "";
+  ok.value = false;
   if (!user.pubkey) {
-    msg.value = 'Login first.'
-    return
+    msg.value = "Login first.";
+    return;
   }
-  busy.value = true
+  busy.value = true;
   try {
-    let kind = 1
-    let tags = []
-    const content = text.value
+    let kind = 1;
+    let tags = [];
+    const content = text.value;
 
-    if (tab.value === 'tweet') {
-      kind = 1
-      for (const f of files.value) tags.push(await buildImeta(f))
-    } else if (tab.value === 'photo' || tab.value === 'gallery') {
-      kind = 20
-      if (title.value) tags.push(['title', title.value])
-      for (const f of files.value) tags.push(await buildImeta(f))
-      if (files.value[0]) tags.push(['m', files.value[0].type || 'image/jpeg'])
-    } else if (tab.value === 'reel') {
-      kind = 22
-      tags.push(['title', title.value || 'Reel'])
-      for (const f of files.value) tags.push(await buildImeta(f))
-    } else if (tab.value === 'video') {
-      kind = 21
-      tags.push(['title', title.value || 'Video'])
-      tags.push(['published_at', String(Math.floor(Date.now() / 1000))])
-      for (const f of files.value) tags.push(await buildImeta(f))
-    } else if (tab.value === 'blog') {
-      kind = 30023
-      tags.push(['d', title.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 64) || `post-${Date.now()}`])
-      tags.push(['title', title.value || 'Untitled'])
-      tags.push(['published_at', String(Math.floor(Date.now() / 1000))])
-    } else if (tab.value === 'music') {
-      kind = 1063
-      const f = files.value[0]
-      if (!f) throw new Error('Pick an audio file')
-      const { url } = await uploadFile(f)
-      const x = await sha256Hex(f).catch(() => '')
+    if (tab.value === "tweet") {
+      kind = 1;
+      for (const f of files.value) tags.push(await buildImeta(f));
+    } else if (tab.value === "photo" || tab.value === "gallery") {
+      kind = 20;
+      if (title.value) tags.push(["title", title.value]);
+      for (const f of files.value) tags.push(await buildImeta(f));
+      if (files.value[0]) tags.push(["m", files.value[0].type || "image/jpeg"]);
+    } else if (tab.value === "reel") {
+      kind = 22;
+      tags.push(["title", title.value || "Reel"]);
+      for (const f of files.value) tags.push(await buildImeta(f));
+    } else if (tab.value === "video") {
+      kind = 21;
+      tags.push(["title", title.value || "Video"]);
+      tags.push(["published_at", String(Math.floor(Date.now() / 1000))]);
+      for (const f of files.value) tags.push(await buildImeta(f));
+    } else if (tab.value === "blog") {
+      kind = 30023;
+      tags.push([
+        "d",
+        title.value
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .slice(0, 64) || `post-${Date.now()}`,
+      ]);
+      tags.push(["title", title.value || "Untitled"]);
+      tags.push(["published_at", String(Math.floor(Date.now() / 1000))]);
+    } else if (tab.value === "music") {
+      kind = 1063;
+      const f = files.value[0];
+      if (!f) throw new Error("Pick an audio file");
+      const { url } = await uploadFile(f);
+      const x = await sha256Hex(f).catch(() => "");
       tags = [
-        ['url', url],
-        ['m', f.type || 'audio/mpeg'],
-        ...(x ? [['x', x]] : []),
-        ['size', String(f.size)],
-      ]
+        ["url", url],
+        ["m", f.type || "audio/mpeg"],
+        ...(x ? [["x", x]] : []),
+        ["size", String(f.size)],
+      ];
     }
 
     const signed = await signEvent({
@@ -117,17 +123,17 @@ async function submit() {
       content,
       tags,
       pubkey: user.pubkey,
-    })
-    await publishEvent(signed)
-    msg.value = `Published · kind ${kind}`
-    ok.value = true
-    text.value = ''
-    title.value = ''
-    files.value = []
+    });
+    await publishEvent(signed);
+    msg.value = `Published · kind ${kind}`;
+    ok.value = true;
+    text.value = "";
+    title.value = "";
+    files.value = [];
   } catch (e) {
-    msg.value = e.message
+    msg.value = e.message;
   } finally {
-    busy.value = false
+    busy.value = false;
   }
 }
 </script>
@@ -135,17 +141,17 @@ async function submit() {
 <template>
   <section class="composer" id="composer">
     <div class="seg">
-      <button
-        v-for="[k, label] in tabs"
-        :key="k"
-        :class="{ on: tab === k }"
-        @click="tab = k"
-      >
+      <button v-for="[k, label] in tabs" :key="k" :class="{ on: tab === k }" @click="tab = k">
         <component :is="ICONS[k]" />
         {{ label }}
       </button>
     </div>
-    <input v-if="tab !== 'tweet' && tab !== 'music'" v-model="title" placeholder="Title" class="in" />
+    <input
+      v-if="tab !== 'tweet' && tab !== 'music'"
+      v-model="title"
+      placeholder="Title"
+      class="in"
+    />
     <textarea
       v-model="text"
       :placeholder="tab === 'blog' ? 'Write in Markdown…' : 'What is happening?'"
@@ -153,19 +159,33 @@ async function submit() {
       class="in area"
     />
     <div class="foot">
-      <label v-if="tab !== 'blog'" class="attach" :title="files.length ? files.map((f) => f.name).join(', ') : 'Attach'">
+      <label
+        v-if="tab !== 'blog'"
+        class="attach"
+        :title="files.length ? files.map((f) => f.name).join(', ') : 'Attach'"
+      >
         <Paperclip />
-        <span>{{ files.length ? `${files.length} file${files.length > 1 ? 's' : ''}` : 'Media' }}</span>
+        <span>{{
+          files.length ? `${files.length} file${files.length > 1 ? "s" : ""}` : "Media"
+        }}</span>
         <input
           type="file"
           multiple
           hidden
           @change="onFiles"
-          :accept="tab === 'music' ? 'audio/*' : tab === 'tweet' ? '' : tab === 'video' || tab === 'reel' ? 'video/*' : 'image/*'"
+          :accept="
+            tab === 'music'
+              ? 'audio/*'
+              : tab === 'tweet'
+                ? ''
+                : tab === 'video' || tab === 'reel'
+                  ? 'video/*'
+                  : 'image/*'
+          "
         />
       </label>
       <button class="post" :disabled="busy" @click="submit">
-        <span>{{ busy ? 'Publishing' : 'Post' }}</span>
+        <span>{{ busy ? "Publishing" : "Post" }}</span>
         <Send />
       </button>
     </div>
