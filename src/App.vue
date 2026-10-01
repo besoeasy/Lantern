@@ -1,11 +1,13 @@
 <script setup>
 import { computed } from "vue";
 import { RouterView, useRoute } from "vue-router";
-import { House, Images, Clapperboard, Music, Plus, Settings } from "@lucide/vue";
+import { House, Plus, Settings } from "@lucide/vue";
 
 const route = useRoute();
 const tab = computed(() => route.query.tab || "all");
-const isActive = (t) => (t === "all" ? tab.value === "all" || !route.query.tab : tab.value === t);
+const isHome = computed(
+  () => route.name === "home" && (tab.value === "all" || !route.query.tab),
+);
 </script>
 
 <template>
@@ -14,24 +16,12 @@ const isActive = (t) => (t === "all" ? tab.value === "all" || !route.query.tab :
       <RouterView :key="route.fullPath" />
     </main>
     <nav class="tabs">
-      <RouterLink to="/" class="tab" :class="{ on: isActive('all') }">
+      <RouterLink to="/" class="tab" :class="{ on: isHome }">
         <House />
         <span>Home</span>
       </RouterLink>
-      <RouterLink to="/?tab=pics" class="tab" :class="{ on: isActive('pics') }">
-        <Images />
-        <span>Photos</span>
-      </RouterLink>
       <RouterLink to="/compose" class="tab create" title="Create" :class="{ on: route.name === 'compose' }">
         <span class="plus"><Plus /></span>
-      </RouterLink>
-      <RouterLink to="/?tab=videos" class="tab" :class="{ on: isActive('videos') }">
-        <Clapperboard />
-        <span>Reels</span>
-      </RouterLink>
-      <RouterLink to="/?tab=music" class="tab" :class="{ on: isActive('music') }">
-        <Music />
-        <span>Music</span>
       </RouterLink>
       <RouterLink to="/settings" class="tab" :class="{ on: route.name === 'settings' }">
         <Settings />
