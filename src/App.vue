@@ -5,6 +5,13 @@ import { RouterView, useRoute } from 'vue-router'
 const route = useRoute()
 const tab = computed(() => route.query.tab || 'all')
 const isActive = (t) => (t === 'all' ? tab.value === 'all' || !route.query.tab : tab.value === t)
+
+// #composer as an href is a router path in hash mode, so scroll manually
+function scrollToComposer() {
+  const el = document.getElementById('composer')
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  else window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 </script>
 
 <template>
@@ -25,9 +32,9 @@ const isActive = (t) => (t === 'all' ? tab.value === 'all' || !route.query.tab :
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.3"/></svg>
         <span>Photos</span>
       </RouterLink>
-      <a href="#composer" class="tab create" title="Create">
+      <button class="tab create" title="Create" @click.prevent="scrollToComposer">
         <span class="plus">+</span>
-      </a>
+      </button>
       <RouterLink to="/?tab=videos" class="tab" :class="{ on: isActive('videos') }">
         <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="4"/><path d="m10 9.5 5 2.5-5 2.5Z"/></svg>
         <span>Reels</span>

@@ -1,5 +1,5 @@
 import { SimplePool, getEventHash, nip19 } from 'nostr-tools'
-import { RELAYS, CLIENT_TAG, POW_TARGET } from './relays.js'
+import { RELAYS, CLIENT_TAG, POW_TARGET, activeRelays, ensureRelays } from './relays.js'
 import { cacheEvent } from './db.js'
 import { db } from './db.js'
 
@@ -114,20 +114,29 @@ export async function signEvent(template) {
 }
 
 export async function publishEvent(signed) {
-  const pubs = pool.publish(RELAYS, signed);
+  const targets = (await ensureRelays()) ?? RELAYS;
+  const pubs = pool.publish(targets, signed);
   await Promise.allSettled(pubs);
   await cacheEvent(signed);
   return signed;
 }
 
 export function subscribeFeed(kinds, onEvent, limit = 100) {
-  const sub = pool.subscribeMany(RELAYS, [{ kinds, limit }], {
-    onevent: (ev) => {
-      cacheEvent(ev);
-      onEvent?.(ev);
+  return pool.subscribeMany(
+    activeRelays(),
+    [{ kinds, limit }],
+    {
+      onevent: (ev) => {
+        cacheEvent(ev);
+        onEvent?.(ev);
+      },
     },
-  });
-  return sub;
+  );
+}
+
+export async function refreshRelays() {
+  await ensureRelays();
+  return activeRelays();
 }
 
 export function shortPk(pk) {
@@ -172,7 +181,8 @@ export async function getEventById(id) {
     if (cached && cached.content !== undefined)
       return { id: cached.id, pubkey: cached.pubkey, kind: cached.kind, created_at: cached.created_at, content: cached.content, tags: cached.tags, sig: cached.sig }
   } catch {}
-  const ev = await pool.get(RELAYS, { ids: [id] })
+  const targets = (await ensureRelays()) ?? RELAYS
+  const ev = await pool.get(targets, { ids: [id] })
   if (ev) await cacheEvent(ev)
   return ev
 }
@@ -189,7 +199,7 @@ export function subscribeComments(rootEv, onEvent) {
     filters.push({ kinds: [1111], '#E': [rootEv.id], limit: 100 })
   }
   // kind 1063 / 20 / 21 / 22 replies use E-tag per NIP-22
-  return pool.subscribeMany(RELAYS, filters, {
+  return pool.subscribeMany(activeRelays(), filters, {
     onevent: (ev) => {
       cacheEvent(ev)
       onEvent?.(ev)

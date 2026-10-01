@@ -1,7 +1,7 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
 import { subscribeFeed } from "@/lib/nostr.js";
-import { FEED_KINDS } from "@/lib/relays.js";
+import { FEED_KINDS, ensureRelays } from "@/lib/relays.js";
 import { getCachedFeed, pruneCache } from "@/lib/db.js";
 
 export const useFeedStore = defineStore("feed", () => {
@@ -26,6 +26,8 @@ export const useFeedStore = defineStore("feed", () => {
     cached.forEach(add);
     loading.value = false;
     closer?.close?.();
+    // Probe relays first so we only open sockets to ones actually online.
+    await ensureRelays();
     closer = subscribeFeed(kinds, add, 100);
     pruneCache();
   }

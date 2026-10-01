@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { pool } from '@/lib/nostr.js'
 import { RELAYS } from '@/lib/relays.js'
+import { ensureRelays } from '@/lib/relays.js'
 import { nip07Pubkey } from '@/lib/nostr.js'
 
 export const useUserStore = defineStore('user', () => {
@@ -28,7 +29,8 @@ export const useUserStore = defineStore('user', () => {
 
   async function loadProfile(pk) {
     try {
-      const ev = await pool.get(RELAYS, { kinds: [0], authors: [pk] })
+      const targets = (await ensureRelays()) ?? RELAYS
+      const ev = await pool.get(targets, { kinds: [0], authors: [pk] })
       if (ev) profile.value = JSON.parse(ev.content || '{}')
     } catch {}
   }
