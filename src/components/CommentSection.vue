@@ -71,48 +71,63 @@ async function submit() {
 
 <style scoped>
 .comments {
-  background: #fff;
-  border: 1px solid #e6e6e6;
-  border-radius: 16px;
-  padding: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 h3 {
   margin: 0;
   font-size: 15px;
+  letter-spacing: -0.01em;
 }
 .form {
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 textarea {
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 11px 13px;
   font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+}
+textarea:focus {
+  border-color: rgba(0, 0, 0, 0.28);
 }
 button {
-  background: #111;
+  background: var(--ink);
   color: #fff;
   border: 0;
   border-radius: 99px;
-  padding: 8px;
+  padding: 9px;
   font-weight: 700;
+  font-size: 13.5px;
   cursor: pointer;
 }
 .c {
-  border-top: 1px solid #eee;
-  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
   font-size: 14px;
+}
+.c p {
+  margin: 4px 0 0;
+  line-height: 1.6;
 }
 .meta {
   font-size: 12px;
-  color: #888;
+  color: var(--ink-3);
+  font-weight: 600;
 }
 .msg,
 .hint {
   font-size: 13px;
-  color: #888;
+  color: var(--ink-3);
+  margin: 0;
 }
 </style>

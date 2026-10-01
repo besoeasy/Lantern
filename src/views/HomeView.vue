@@ -1,17 +1,21 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from "vue";
-import { useFeedStore } from "@/stores/feed.js";
-import { useUserStore } from "@/stores/user.js";
-import Composer from "@/components/Composer.vue";
-import NoteCard from "@/components/NoteCard.vue";
-import PictureCard from "@/components/PictureCard.vue";
-import VideoCard from "@/components/VideoCard.vue";
-import ArticleCard from "@/components/ArticleCard.vue";
-import MusicCard from "@/components/MusicCard.vue";
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useFeedStore } from '@/stores/feed.js'
+import { useUserStore } from '@/stores/user.js'
+import Composer from '@/components/Composer.vue'
+import NoteCard from '@/components/NoteCard.vue'
+import PictureCard from '@/components/PictureCard.vue'
+import VideoCard from '@/components/VideoCard.vue'
+import ArticleCard from '@/components/ArticleCard.vue'
+import MusicCard from '@/components/MusicCard.vue'
 
-const feed = useFeedStore();
-const user = useUserStore();
-const filter = ref("all");
+const feed = useFeedStore()
+const user = useUserStore()
+const route = useRoute()
+const router = useRouter()
+const filter = ref(route.query.tab || 'all')
+const loginErr = ref('')
 
 const FILTERS = {
   all: null,
@@ -20,82 +24,91 @@ const FILTERS = {
   videos: [21, 22],
   blogs: [30023],
   music: [1063],
-};
+}
 
 const visible = computed(() => {
-  const kinds = FILTERS[filter.value];
-  if (!kinds) return feed.events;
-  return feed.events.filter((e) => kinds.includes(e.kind));
-});
+  const kinds = FILTERS[filter.value]
+  if (!kinds) return feed.events
+  return feed.events.filter((e) => kinds.includes(e.kind))
+})
 
-onMounted(() => feed.start());
-onUnmounted(() => feed.stop());
+watch(
+  () => route.query.tab,
+  (t) => {
+    if (t && FILTERS[t] !== undefined) filter.value = t
+    else if (!t) filter.value = 'all'
+  },
+)
+
+function setFilter(k) {
+  filter.value = k
+  router.replace({ query: { ...route.query, tab: k === 'all' ? undefined : k } })
+}
+
+onMounted(() => feed.start())
+onUnmounted(() => feed.stop())
 
 async function login() {
+  loginErr.value = ''
   try {
-    await user.login();
+    await user.login()
   } catch (e) {
-    alert(e.message);
+    loginErr.value = e.message
   }
 }
 
 function postUrl(id) {
-  return `${location.origin}${location.pathname}#/post/${id}`;
+  return `${location.origin}${location.pathname}#/post/${id}`
 }
 
 async function copyLink(id) {
   try {
-    await navigator.clipboard.writeText(postUrl(id));
-    alert('Link copied:\n' + postUrl(id));
+    await navigator.clipboard.writeText(postUrl(id))
   } catch {
-    prompt('Copy post URL:', postUrl(id));
+    prompt('Copy post URL:', postUrl(id))
   }
 }
 </script>
 
 <template>
   <div class="home">
-    <div class="loginbar" v-if="!user.pubkey">
-      <span>NOSTR extension required (NIP-07)</span>
-      <button @click="login">Login</button>
+    <div class="login" v-if="!user.pubkey">
+      <div class="login-txt">
+        <strong>Join the feed</strong>
+        <span>Connect a NIP-07 extension to post & comment.</span>
+      </div>
+      <button @click="login" :disabled="user.busy">{{ user.busy ? '…' : 'Login' }}</button>
     </div>
-    <div class="loginbar ok" v-else>
-      <span>Logged in · {{ user.pubkey.slice(0, 12) }}… · client:lantern · POW:5</span>
-      <button @click="user.logout()">Logout</button>
-    </div>
+    <p v-if="loginErr" class="err">{{ loginErr }}</p>
 
     <Composer v-if="user.pubkey" />
 
-    <div class="filters">
+    <div class="pills">
       <button
         v-for="k in Object.keys(FILTERS)"
         :key="k"
         :class="{ on: filter === k }"
-        @click="filter = k"
+        @click="setFilter(k)"
       >
         {{ k }}
       </button>
     </div>
 
-    <p v-if="feed.loading" class="hint">Loading relays + Dexie cache…</p>
+    <p v-if="feed.loading" class="hint">Syncing relays…</p>
     <div class="list">
-      <template v-for="ev in visible" :key="ev.id">
-        <div class="postwrap">
-          <NoteCard v-if="ev.kind === 1" :ev="ev" />
-          <PictureCard v-else-if="ev.kind === 20" :ev="ev" />
-          <VideoCard v-else-if="ev.kind === 21 || ev.kind === 22" :ev="ev" />
-          <ArticleCard v-else-if="ev.kind === 30023" :ev="ev" />
-          <MusicCard v-else-if="ev.kind === 1063" :ev="ev" />
-          <div class="actions">
-            <RouterLink :to="`/post/${ev.id}`" target="_blank" class="open">Open ↗</RouterLink>
-            <button class="copy" @click="copyLink(ev.id)">Copy link</button>
-          </div>
+      <div class="postwrap" v-for="ev in visible" :key="ev.id">
+        <NoteCard v-if="ev.kind === 1" :ev="ev" />
+        <PictureCard v-else-if="ev.kind === 20" :ev="ev" />
+        <VideoCard v-else-if="ev.kind === 21 || ev.kind === 22" :ev="ev" />
+        <ArticleCard v-else-if="ev.kind === 30023" :ev="ev" />
+        <MusicCard v-else-if="ev.kind === 1063" :ev="ev" />
+        <div class="actions">
+          <RouterLink :to="`/post/${ev.id}`" target="_blank" class="open">Open ↗</RouterLink>
+          <button class="copy" @click="copyLink(ev.id)">Copy link</button>
         </div>
-      </template>
+      </div>
     </div>
-    <p v-if="!feed.loading && !visible.length" class="hint">
-      No posts yet (relays empty or all non-ipfs filtered by clients).
-    </p>
+    <p v-if="!feed.loading && !visible.length" class="hint">Nothing here yet.</p>
   </div>
 </template>
 
@@ -104,80 +117,109 @@ async function copyLink(id) {
   display: grid;
   gap: 12px;
 }
-.loginbar {
+.login {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fff7e6;
-  border: 1px solid #f0d48a;
-  padding: 10px 12px;
-  border-radius: 12px;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+}
+.login-txt {
+  display: grid;
+  gap: 2px;
   font-size: 13px;
+  color: var(--ink-2);
 }
-.loginbar.ok {
-  background: #eefbef;
-  border-color: #bfe6c3;
+.login-txt strong {
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
-.loginbar button {
-  border: 1px solid #111;
-  background: #111;
+.login button {
+  flex-shrink: 0;
+  border: 0;
+  background: var(--ink);
   color: #fff;
   border-radius: 99px;
-  padding: 5px 12px;
+  padding: 9px 20px;
+  font-weight: 700;
+  font-size: 13px;
   cursor: pointer;
 }
-.filters {
+.err {
+  font-size: 13px;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 0;
+}
+.pills {
   display: flex;
   gap: 6px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
 }
-.filters button {
-  border: 1px solid #ddd;
-  background: #fff;
-  padding: 6px 12px;
+.pills::-webkit-scrollbar {
+  display: none;
+}
+.pills button {
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  background: var(--card);
+  padding: 7px 14px;
   border-radius: 99px;
   cursor: pointer;
   font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  text-transform: capitalize;
 }
-.filters button.on {
-  background: #111;
+.pills button.on {
+  background: var(--ink);
+  border-color: var(--ink);
   color: #fff;
 }
 .list {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 .postwrap {
   display: grid;
-  gap: 0;
 }
 .actions {
   display: flex;
   gap: 8px;
-  align-items: center;
-  padding: 6px 2px 0;
+  padding: 8px 4px 0;
 }
 .open {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  color: #111;
+  color: var(--ink);
   text-decoration: none;
-  border: 1px solid #ddd;
-  background: #fff;
-  padding: 4px 12px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  padding: 5px 13px;
   border-radius: 99px;
 }
 .copy {
-  font-size: 13px;
-  color: #555;
-  border: 1px solid #ddd;
-  background: #fff;
-  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+  background: transparent;
+  padding: 5px 13px;
   border-radius: 99px;
   cursor: pointer;
 }
 .hint {
-  color: #888;
+  color: var(--ink-3);
   font-size: 13px;
   text-align: center;
 }

@@ -66,21 +66,23 @@ function shareUrl() {
   gap: 12px;
 }
 .back {
-  font-size: 14px;
-  color: #111;
+  font-size: 13.5px;
+  color: var(--ink);
   text-decoration: none;
   font-weight: 700;
 }
 .share {
-  background: #fff;
-  border: 1px dashed #ccc;
-  border-radius: 12px;
-  padding: 10px;
+  background: var(--card);
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 12px 14px;
   font-size: 12px;
   word-break: break-all;
+  color: var(--ink-2);
 }
 .hint {
-  color: #888;
+  color: var(--ink-3);
   font-size: 13px;
   text-align: center;
 }
