@@ -24,7 +24,7 @@ const FILTERS = {
   pics: [20],
   videos: [21, 22],
   blogs: [30023],
-  music: [1063],
+  music: [1063, 36787],
 };
 
 const visible = computed(() => {
@@ -107,7 +107,7 @@ function openPost(e, id) {
         <PictureCard v-else-if="ev.kind === 20" :ev="ev" />
         <VideoCard v-else-if="ev.kind === 21 || ev.kind === 22" :ev="ev" />
         <ArticleCard v-else-if="ev.kind === 30023" :ev="ev" />
-        <MusicCard v-else-if="ev.kind === 1063" :ev="ev" />
+        <MusicCard v-else-if="ev.kind === 1063 || ev.kind === 36787" :ev="ev" />
         <div v-if="displayHashtags(ev).shown.length" class="tagrow">
           <RouterLink
             v-for="t in displayHashtags(ev).shown"

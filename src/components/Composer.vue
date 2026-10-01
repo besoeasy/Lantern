@@ -12,7 +12,7 @@ import {
   Type,
   X,
 } from "@lucide/vue";
-import { signEvent, publishEvent } from "@/lib/nostr.js";
+import { signEvent, publishEvent, formatDuration } from "@/lib/nostr.js";
 import { uploadFile, sha256Hex } from "@/lib/ipfs.js";
 import { useUserStore } from "@/stores/user.js";
 
@@ -39,6 +39,14 @@ const ok = ref(false);
 const tagChips = ref([]);
 const tagDraft = ref("");
 const hashInput = ref(null);
+// Amethyst-style music track fields (kind 36787)
+const musicTitle = ref("");
+const musicArtist = ref("");
+const musicAlbum = ref("");
+const musicTrackNo = ref("");
+const musicReleased = ref("");
+const coverFile = ref(null);
+const audioDuration = ref(0);
 
 const tabs = [
   ["note", "Note"],
@@ -52,6 +60,32 @@ const tabs = [
 
 function onFiles(e) {
   files.value = [...e.target.files];
+  audioDuration.value = 0;
+  if (tab.value === "music" && files.value[0]) detectDuration(files.value[0]);
+}
+
+function onCover(e) {
+  coverFile.value = e.target.files[0] || null;
+}
+
+// Read track length from the audio file header (no upload needed)
+function detectDuration(file) {
+  try {
+    const u = URL.createObjectURL(file);
+    const a = new Audio();
+    a.preload = "metadata";
+    a.onloadedmetadata = () => {
+      if (Number.isFinite(a.duration)) audioDuration.value = Math.round(a.duration);
+      URL.revokeObjectURL(u);
+    };
+    a.onerror = () => URL.revokeObjectURL(u);
+    a.src = u;
+  } catch {}
+}
+
+function audioFormat(file) {
+  const ext = (file.name.split(".").pop() || "").toLowerCase();
+  return /^[a-z0-9]{2,5}$/.test(ext) ? ext : "";
 }
 
 // Chip-based hashtags: typing a word + Space/Enter/comma banks it as a chip.
@@ -129,17 +163,34 @@ async function submit() {
       tags.push(["title", title.value || "Untitled"]);
       tags.push(["published_at", String(Math.floor(Date.now() / 1000))]);
     } else if (tab.value === "music") {
-      kind = 1063;
-      const f = files.value[0];
+      // Amethyst-compatible music track (kind 36787): title/artist/album/art.
+      kind = 36787;
+      const f = files.value.find((x) => x.type.startsWith("audio")) || files.value[0];
       if (!f) throw new Error("Pick an audio file");
+      if (!musicTitle.value.trim() || !musicArtist.value.trim())
+        throw new Error("Track title and artist are required");
       const { url } = await uploadFile(f);
       const x = await sha256Hex(f).catch(() => "");
       tags = [
+        ["d", crypto.randomUUID?.() || `track-${Date.now()}`],
+        ["title", musicTitle.value.trim()],
+        ["artist", musicArtist.value.trim()],
         ["url", url],
-        ["m", f.type || "audio/mpeg"],
+        ["t", "music"],
         ...(x ? [["x", x]] : []),
         ["size", String(f.size)],
       ];
+      const fmt = audioFormat(f);
+      if (fmt) tags.push(["format", fmt]);
+      if (audioDuration.value > 0) tags.push(["duration", String(audioDuration.value)]);
+      if (coverFile.value) {
+        const art = await uploadFile(coverFile.value);
+        tags.push(["image", art.url]);
+      }
+      if (musicAlbum.value.trim()) tags.push(["album", musicAlbum.value.trim()]);
+      const tn = parseInt(musicTrackNo.value, 10);
+      if (tn > 0) tags.push(["track_number", String(tn)]);
+      if (musicReleased.value.trim()) tags.push(["released", musicReleased.value.trim()]);
     }
 
     confirmDraft();
@@ -158,6 +209,13 @@ async function submit() {
     files.value = [];
     tagChips.value = [];
     tagDraft.value = "";
+    musicTitle.value = "";
+    musicArtist.value = "";
+    musicAlbum.value = "";
+    musicTrackNo.value = "";
+    musicReleased.value = "";
+    coverFile.value = null;
+    audioDuration.value = 0;
     emit("published", signed);
   } catch (e) {
     msg.value = e.message;
@@ -181,9 +239,26 @@ async function submit() {
       placeholder="Title"
       class="in"
     />
+    <template v-if="tab === 'music'">
+      <input v-model="musicTitle" placeholder="Track title *" class="in" />
+      <input v-model="musicArtist" placeholder="Artist *" class="in" />
+      <input v-model="musicAlbum" placeholder="Album" class="in" />
+      <div class="mrow">
+        <input v-model="musicTrackNo" placeholder="# · track" inputmode="numeric" class="in" />
+        <input v-model="musicReleased" placeholder="Released · e.g. 2024" class="in grow" />
+      </div>
+      <label class="coverpick">
+        <Image />
+        <span>{{ coverFile ? coverFile.name : "Cover art" }}</span>
+        <input type="file" accept="image/*" hidden @change="onCover" />
+      </label>
+      <p v-if="audioDuration > 0" class="dur">Duration {{ formatDuration(audioDuration) }} detected</p>
+    </template>
     <textarea
       v-model="text"
-      :placeholder="tab === 'blog' ? 'Write in Markdown…' : 'What is happening?'"
+      :placeholder="
+        tab === 'blog' ? 'Write in Markdown…' : tab === 'music' ? 'Description or lyrics…' : 'What is happening?'
+      "
       rows="3"
       class="in area"
     />
@@ -305,6 +380,53 @@ async function submit() {
 .area {
   resize: vertical;
   line-height: 1.55;
+}
+.mrow {
+  display: flex;
+  gap: 6px;
+}
+.mrow .in {
+  flex: 0 0 110px;
+  min-width: 0;
+}
+.mrow .in.grow {
+  flex: 1;
+}
+.coverpick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  padding: 10px 13px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.coverpick:hover {
+  color: var(--ink);
+  border-style: solid;
+}
+.coverpick svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+.coverpick span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dur {
+  font-size: 12px;
+  color: #15803d;
+  font-weight: 600;
+  margin: 0 2px 8px;
 }
 .hashwrap {
   display: flex;

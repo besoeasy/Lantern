@@ -205,13 +205,25 @@ export function tagVal(ev, name) {
 }
 
 // Hashtag (`t`) showcase for under-post pills. Deduped, capped at `limit`.
+// The `music` genre marker on 36787 tracks is structural (Amethyst convention),
+// not a user hashtag, so it is excluded there.
 export function displayHashtags(ev, limit = 4) {
+  const skip = ev.kind === 36787 ? new Set(["music"]) : new Set();
   const all = [
     ...new Set(
-      (ev.tags || []).filter(([t, v]) => t === "t" && v).map(([, v]) => v),
+      (ev.tags || [])
+        .filter(([t, v]) => t === "t" && v && !skip.has(v))
+        .map(([, v]) => v),
     ),
   ];
   return { shown: all.slice(0, limit), extra: Math.max(0, all.length - limit) };
+}
+
+// seconds -> "3:05" for track durations
+export function formatDuration(s) {
+  s = Number(s);
+  if (!Number.isFinite(s) || s < 0) return "";
+  return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 }
 
 export function isLanternEvent(ev) {

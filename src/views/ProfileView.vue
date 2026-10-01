@@ -264,7 +264,7 @@ onUnmounted(() => sub?.close?.());
           <PictureCard v-else-if="ev.kind === 20" :ev="ev" />
           <VideoCard v-else-if="ev.kind === 21 || ev.kind === 22" :ev="ev" />
           <ArticleCard v-else-if="ev.kind === 30023" :ev="ev" />
-          <MusicCard v-else-if="ev.kind === 1063" :ev="ev" />
+          <MusicCard v-else-if="ev.kind === 1063 || ev.kind === 36787" :ev="ev" />
           <ReactionBar :ev="ev" />
         </div>
       </div>

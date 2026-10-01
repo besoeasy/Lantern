@@ -21,7 +21,7 @@ export const POW_TARGET = 5;
 // USP: nothing Lantern publishes lives forever. Every signed event carries a
 // NIP-40 `expiration` tag 3 years after creation; relays honor it by deleting.
 export const CONTENT_TTL_SECONDS = 3 * 365 * 24 * 60 * 60;
-export const FEED_KINDS = [1, 20, 21, 22, 30023, 1063];
+export const FEED_KINDS = [1, 20, 21, 22, 30023, 1063, 36787];
 
 // Relays are community-run and often offline. Probe before subscribing so the
 // pool does not keep retrying dead sockets. User config decides the candidate
