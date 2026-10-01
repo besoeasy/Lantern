@@ -9,6 +9,12 @@ db.version(1).stores({
 
 const THIRTY_DAYS = 30 * 24 * 60 * 60;
 
+// NIP-40: an event past its `expiration` tag is dead — never serve it locally.
+function isExpired(ev, nowSec = Math.floor(Date.now() / 1000)) {
+  const exp = (ev.tags || []).find(([t]) => t === "expiration")?.[1];
+  return !!exp && Number(exp) <= nowSec;
+}
+
 export async function cacheEvent(ev) {
   try {
     await db.events.put({
@@ -30,7 +36,7 @@ export async function getCachedFeed(kinds, limit = 100) {
     .where("created_at")
     .above(cutoff)
     .reverse()
-    .filter((ev) => (kinds?.length ? kinds.includes(ev.kind) : true))
+    .filter((ev) => (kinds?.length ? kinds.includes(ev.kind) : true) && !isExpired(ev))
     .limit(limit)
     .toArray();
 }
@@ -43,7 +49,11 @@ export async function getCachedTag(tag, limit = 100) {
     .filter((ev) => (ev.tags || []).some(([t, v]) => t === "t" && v === tag))
     .toArray();
   return all
-    .filter((ev) => (ev.tags || []).some(([t, v]) => t === "client" && v === "lantern"))
+    .filter(
+      (ev) =>
+        (ev.tags || []).some(([t, v]) => t === "client" && v === "lantern") &&
+        !isExpired(ev),
+    )
     .sort((a, b) => b.created_at - a.created_at)
     .slice(0, limit);
 }
@@ -51,6 +61,7 @@ export async function getCachedTag(tag, limit = 100) {
 export async function pruneCache() {
   const cutoff = Math.floor(Date.now() / 1000) - THIRTY_DAYS;
   await db.events.where("created_at").below(cutoff).delete();
+  await db.events.filter((ev) => isExpired(ev)).delete();
   await db.files.where("created_at").below(cutoff).delete();
   try {
     const count = await db.events.count();

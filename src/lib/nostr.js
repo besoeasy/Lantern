@@ -1,5 +1,5 @@
 import { SimplePool, getEventHash, nip19 } from "nostr-tools";
-import { DEFAULT_RELAYS, CLIENT_TAG, POW_TARGET, FEED_KINDS, activeRelays, ensureRelays } from "./relays.js";
+import { DEFAULT_RELAYS, CLIENT_TAG, POW_TARGET, FEED_KINDS, CONTENT_TTL_SECONDS, activeRelays, ensureRelays } from "./relays.js";
 import { cacheEvent } from "./db.js";
 import { db } from "./db.js";
 
@@ -93,12 +93,18 @@ function minePow(template, target) {
 // minimal event-hash without pulling nip07 internals (nostr-tools getEventHash)
 
 export async function signEvent(template) {
+  const created_at = template.created_at || Math.floor(Date.now() / 1000);
   const base = {
     kind: template.kind,
-    created_at: template.created_at,
+    created_at,
     content: template.content ?? "",
-    // Replace any caller-supplied client tag so every Lantern post carries one canonical id.
-    tags: [...(template.tags || []).filter(([t]) => t !== "client"), ["client", CLIENT_TAG]],
+    tags: [
+      // Replace any caller-supplied client/expiration tags so every Lantern
+      // post carries one canonical id and a fixed 3-year expiry (NIP-40).
+      ...(template.tags || []).filter(([t]) => t !== "client" && t !== "expiration"),
+      ["client", CLIENT_TAG],
+      ["expiration", String(created_at + CONTENT_TTL_SECONDS)],
+    ],
     pubkey: template.pubkey,
   };
   if (!base.pubkey) throw new Error("Missing pubkey: login first.");
