@@ -166,8 +166,9 @@ function openPost(e, id) {
   display: flex;
   gap: 2px;
   overflow-x: auto;
-  margin: -14px -14px 0;
-  padding: 8px 14px;
+  width: 100vw;
+  margin: -14px 0 0 calc(50% - 50vw);
+  padding: 8px max(14px, calc(50vw - 286px));
   background: #fff;
   border-bottom: 1px solid var(--line);
   scrollbar-width: none;

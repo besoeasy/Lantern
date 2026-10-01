@@ -52,6 +52,7 @@ onMounted(() => user.autoLogin());
 }
 body {
   margin: 0;
+  overflow-x: clip;
   background: var(--bg);
   color: var(--ink);
   font-family:
