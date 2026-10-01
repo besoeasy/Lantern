@@ -15,6 +15,7 @@ import { useCopy } from "@/composables/useCopy.js";
 import { useEventList } from "@/composables/useEventList.js";
 import { useUserStore } from "@/stores/user.js";
 import PostCard from "@/components/PostCard.vue";
+import LoginPrompt from "@/components/LoginPrompt.vue";
 import ReactionBar from "@/components/ReactionBar.vue";
 
 const route = useRoute();
@@ -28,7 +29,6 @@ const avatarUrl = ref("");
 const bannerUrl = ref("");
 const loadingProfile = ref(true);
 const loadingPosts = ref(true);
-const loginErr = ref("");
 const { copied: copiedNpub, copy: copyText } = useCopy();
 const { items: events, add, reset: resetEvents } = useEventList();
 let sub = null;
@@ -76,15 +76,6 @@ function goPost(id) {
 function openPost(e, id) {
   if (e.target.closest("button, a, video, audio, input, textarea, select")) return;
   goPost(id);
-}
-
-async function login() {
-  loginErr.value = "";
-  try {
-    await user.login();
-  } catch (e) {
-    loginErr.value = e.message;
-  }
 }
 
 function npubOf(hex) {
@@ -162,14 +153,12 @@ onUnmounted(() => sub?.close?.());
       <h1 class="title">Profile</h1>
     </div>
 
-    <div class="login" v-if="!pk && !user.probing">
-      <div class="login-txt">
-        <strong>Login to see your profile</strong>
-        <span>Connect a NIP-07 extension, or open someone's profile via link.</span>
-      </div>
-      <button @click="login" :disabled="user.busy">{{ user.busy ? "…" : "Login" }}</button>
-    </div>
-    <p v-if="loginErr" class="err">{{ loginErr }}</p>
+    <LoginPrompt
+      v-if="!pk"
+      ignore-signer
+      title="Login to see your profile"
+      subtitle="Connect a NIP-07 extension, or open someone's profile via link."
+    />
 
     <template v-if="pk">
       <section v-if="loadingProfile" class="card skeleton">
@@ -280,47 +269,6 @@ onUnmounted(() => sub?.close?.());
   margin: 0;
   font-size: 17px;
   letter-spacing: -0.02em;
-}
-.login {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 14px 16px;
-}
-.login-txt {
-  display: grid;
-  gap: 2px;
-  font-size: 13px;
-  color: var(--ink-2);
-}
-.login-txt strong {
-  font-size: 14px;
-  color: var(--ink);
-}
-.login button {
-  flex-shrink: 0;
-  border: 0;
-  background: var(--ink);
-  color: #fff;
-  border-radius: 99px;
-  padding: 9px 20px;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-}
-.err {
-  font-size: 13px;
-  color: #dc2626;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 12px;
-  padding: 10px 14px;
-  margin: 0;
 }
 .card {
   background: var(--card);
