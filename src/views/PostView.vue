@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { ArrowLeft, Braces, Copy } from "@lucide/vue";
+import { ArrowLeft, Braces, Copy, Link2 } from "@lucide/vue";
 import { getEventById } from "@/lib/nostr.js";
 import NoteCard from "@/components/NoteCard.vue";
 import PictureCard from "@/components/PictureCard.vue";
@@ -16,6 +16,7 @@ const loading = ref(true);
 const err = ref("");
 const showRaw = ref(false);
 const copied = ref(false);
+const copiedShare = ref(false);
 
 const rawJson = computed(() => (ev.value ? JSON.stringify(ev.value, null, 2) : ""));
 
@@ -56,14 +57,32 @@ async function copyRaw() {
     prompt("Copy raw event JSON:", rawJson.value);
   }
 }
+
+async function copyShare() {
+  copiedShare.value = false;
+  try {
+    await navigator.clipboard.writeText(shareUrl());
+    copiedShare.value = true;
+    setTimeout(() => (copiedShare.value = false), 1500);
+  } catch {
+    prompt("Copy shareable URL:", shareUrl());
+  }
+}
 </script>
 
 <template>
   <div class="post">
-    <RouterLink to="/" class="back">
-      <ArrowLeft />
-      <span>Back to feed</span>
-    </RouterLink>
+    <div class="topbar">
+      <RouterLink to="/" class="back">
+        <ArrowLeft />
+        <span>Back to feed</span>
+      </RouterLink>
+      <button class="share" @click="copyShare" :title="shareUrl()">
+        <Link2 />
+        <code>{{ shareUrl() }}</code>
+        <span class="copied" v-if="copiedShare">Copied!</span>
+      </button>
+    </div>
     <p v-if="loading" class="hint">Loading post…</p>
     <p v-else-if="err" class="hint">{{ err }}</p>
     <template v-else-if="ev">
@@ -72,10 +91,6 @@ async function copyRaw() {
       <VideoCard v-else-if="ev.kind === 21 || ev.kind === 22" :ev="ev" />
       <ArticleCard v-else-if="ev.kind === 30023" :ev="ev" />
       <MusicCard v-else-if="ev.kind === 1063" :ev="ev" />
-      <div class="share">
-        <span>Shareable URL:</span>
-        <code>{{ shareUrl() }}</code>
-      </div>
       <div class="raw">
         <div class="raw-head">
           <button class="raw-toggle" @click="showRaw = !showRaw">
@@ -99,6 +114,13 @@ async function copyRaw() {
   display: grid;
   gap: 12px;
 }
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 .back {
   display: inline-flex;
   align-items: center;
@@ -116,14 +138,42 @@ async function copyRaw() {
   stroke-linejoin: round;
 }
 .share {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
   background: var(--card);
   border: 1px dashed var(--line);
-  border-radius: 14px;
+  border-radius: 99px;
   box-shadow: var(--shadow);
-  padding: 12px 14px;
+  padding: 7px 14px;
   font-size: 12px;
-  word-break: break-all;
   color: var(--ink-2);
+  cursor: pointer;
+  font-family: inherit;
+}
+.share:hover {
+  border-style: solid;
+  color: var(--ink);
+}
+.share svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.share code {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 240px;
+}
+.share .copied {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: #15803d;
 }
 .raw {
   background: var(--card);
