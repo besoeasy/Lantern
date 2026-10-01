@@ -11,7 +11,7 @@ defineProps({ ev: Object });
         <div class="avatar">{{ ev.pubkey.slice(0, 1).toUpperCase() }}</div>
       </div>
       <div class="who">
-        <div class="pk">{{ shortPk(ev.pubkey) }}</div>
+        <RouterLink :to="`/profile/${ev.pubkey}`" class="pk">{{ shortPk(ev.pubkey) }}</RouterLink>
         <div class="title" v-if="tagVal(ev, 'title')">{{ tagVal(ev, "title") }}</div>
       </div>
     </header>
@@ -57,6 +57,9 @@ header {
   font-weight: 700;
   font-size: 13px;
   letter-spacing: -0.01em;
+  display: block;
+  color: inherit;
+  text-decoration: none;
 }
 .title {
   font-size: 12px;

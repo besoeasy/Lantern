@@ -18,7 +18,7 @@ function time(t) {
     <div class="row">
       <div class="avatar">{{ ev.pubkey.slice(0, 1).toUpperCase() }}</div>
       <div class="meta">
-        <span class="pk">{{ shortPk(ev.pubkey) }}</span>
+        <RouterLink :to="`/profile/${ev.pubkey}`" class="pk">{{ shortPk(ev.pubkey) }}</RouterLink>
         <span class="time">{{ time(ev.created_at) }}</span>
       </div>
     </div>
@@ -67,6 +67,7 @@ function time(t) {
   color: var(--ink);
   font-weight: 700;
   letter-spacing: -0.01em;
+  text-decoration: none;
 }
 .time {
   color: var(--ink-3);

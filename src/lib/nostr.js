@@ -170,9 +170,9 @@ export function subscribeTag(tag, onEvent, limit = 100) {
 
 export function shortPk(pk) {
   try {
-    return nip19.npubEncode(pk).slice(0, 12) + "…";
+    return nip19.npubEncode(pk).slice(-6);
   } catch {
-    return pk.slice(0, 8) + "…";
+    return (pk || "").slice(-6);
   }
 }
 

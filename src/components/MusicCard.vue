@@ -15,7 +15,7 @@ defineProps({ ev: Object });
     </div>
     <IpfsMedia :src="tagVal(ev, 'url')" kind="audio" />
     <p class="cap">{{ ev.content }}</p>
-    <div class="pk">{{ shortPk(ev.pubkey) }}</div>
+    <RouterLink :to="`/profile/${ev.pubkey}`" class="pk">{{ shortPk(ev.pubkey) }}</RouterLink>
   </article>
 </template>
 
@@ -68,5 +68,7 @@ defineProps({ ev: Object });
   font-size: 11.5px;
   color: #71717a;
   margin-top: 8px;
+  display: block;
+  text-decoration: none;
 }
 </style>

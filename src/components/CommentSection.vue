@@ -64,7 +64,7 @@ async function submit() {
     </div>
     <p v-if="msg" class="msg">{{ msg }}</p>
     <div v-for="c in comments" :key="c.id" class="c">
-      <div class="meta">{{ shortPk(c.pubkey) }} · k{{ c.kind }}</div>
+      <div class="meta"><RouterLink :to="`/profile/${c.pubkey}`" class="pk">{{ shortPk(c.pubkey) }}</RouterLink> · k{{ c.kind }}</div>
       <p>{{ c.content }}</p>
     </div>
     <p v-if="!comments.length" class="hint">No comments yet. Be first.</p>
@@ -125,6 +125,13 @@ button {
   font-size: 12px;
   color: var(--ink-3);
   font-weight: 600;
+}
+.meta .pk {
+  color: inherit;
+  text-decoration: none;
+}
+.meta .pk:hover {
+  text-decoration: underline;
 }
 .msg,
 .hint {

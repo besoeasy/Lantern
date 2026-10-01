@@ -14,7 +14,7 @@ defineProps({ ev: Object });
       <IpfsMedia v-for="(m, i) in imetaList(ev)" :key="i" :src="m.url" kind="video" />
     </div>
     <p class="desc">{{ ev.content }}</p>
-    <div class="pk">{{ shortPk(ev.pubkey) }}</div>
+    <RouterLink :to="`/profile/${ev.pubkey}`" class="pk">{{ shortPk(ev.pubkey) }}</RouterLink>
   </article>
 </template>
 
@@ -64,5 +64,7 @@ defineProps({ ev: Object });
   font-size: 11.5px;
   color: #71717a;
   margin-top: 6px;
+  display: block;
+  text-decoration: none;
 }
 </style>

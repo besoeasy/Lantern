@@ -9,7 +9,7 @@ defineProps({ ev: Object });
     <h3>{{ tagVal(ev, "title") || "Untitled" }}</h3>
     <p class="sum" v-if="tagVal(ev, 'summary')">{{ tagVal(ev, "summary") }}</p>
     <p class="body">{{ ev.content.slice(0, 400) }}{{ ev.content.length > 400 ? "…" : "" }}</p>
-    <div class="pk">{{ shortPk(ev.pubkey) }}</div>
+    <RouterLink :to="`/profile/${ev.pubkey}`" class="pk">{{ shortPk(ev.pubkey) }}</RouterLink>
   </article>
 </template>
 
@@ -52,5 +52,7 @@ h3 {
   margin-top: 12px;
   font-size: 12px;
   color: var(--ink-3);
+  display: block;
+  text-decoration: none;
 }
 </style>
