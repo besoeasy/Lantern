@@ -1,5 +1,5 @@
 import { SimplePool, getEventHash, nip19 } from "nostr-tools";
-import { DEFAULT_RELAYS, CLIENT_TAG, POW_TARGET, activeRelays, ensureRelays } from "./relays.js";
+import { DEFAULT_RELAYS, CLIENT_TAG, POW_TARGET, FEED_KINDS, activeRelays, ensureRelays } from "./relays.js";
 import { cacheEvent } from "./db.js";
 import { db } from "./db.js";
 
@@ -149,6 +149,19 @@ export async function refreshRelays() {
   return activeRelays();
 }
 
+// Lantern-scoped tag timeline: relay prefilter plus local guards, same as the feed.
+export function subscribeTag(tag, onEvent, limit = 100) {
+  const filter = { kinds: FEED_KINDS, limit, "#t": [tag], "#client": [CLIENT_TAG] };
+  return pool.subscribeMany(activeRelays(), [filter], {
+    onevent: (ev) => {
+      if (!isLanternEvent(ev)) return;
+      if (!(ev.tags || []).some(([t, v]) => t === "t" && v === tag)) return;
+      cacheEvent(ev);
+      onEvent?.(ev);
+    },
+  });
+}
+
 export function shortPk(pk) {
   try {
     return nip19.npubEncode(pk).slice(0, 12) + "…";
@@ -183,6 +196,16 @@ export function ipfsToHttp(ipfsUrl) {
 
 export function tagVal(ev, name) {
   return ev.tags?.find(([t]) => t === name)?.[1] || "";
+}
+
+// Hashtag (`t`) showcase for under-post pills. Deduped, capped at `limit`.
+export function displayHashtags(ev, limit = 4) {
+  const all = [
+    ...new Set(
+      (ev.tags || []).filter(([t, v]) => t === "t" && v).map(([, v]) => v),
+    ),
+  ];
+  return { shown: all.slice(0, limit), extra: Math.max(0, all.length - limit) };
 }
 
 export function isLanternEvent(ev) {

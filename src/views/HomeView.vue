@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useFeedStore } from "@/stores/feed.js";
 import { useUserStore } from "@/stores/user.js";
+import { displayHashtags } from "@/lib/nostr.js";
 import NoteCard from "@/components/NoteCard.vue";
 import PictureCard from "@/components/PictureCard.vue";
 import VideoCard from "@/components/VideoCard.vue";
@@ -106,6 +107,19 @@ function openPost(e, id) {
         <VideoCard v-else-if="ev.kind === 21 || ev.kind === 22" :ev="ev" />
         <ArticleCard v-else-if="ev.kind === 30023" :ev="ev" />
         <MusicCard v-else-if="ev.kind === 1063" :ev="ev" />
+        <div v-if="displayHashtags(ev).shown.length" class="tagrow">
+          <RouterLink
+            v-for="t in displayHashtags(ev).shown"
+            :key="t"
+            :to="`/tag/${encodeURIComponent(t)}`"
+            class="tag"
+          >
+            #{{ t }}
+          </RouterLink>
+          <span v-if="displayHashtags(ev).extra" class="more">
+            +{{ displayHashtags(ev).extra }}
+          </span>
+        </div>
       </div>
     </div>
     <p v-if="!feed.loading && !visible.length" class="hint">Nothing here yet.</p>
@@ -205,6 +219,36 @@ function openPost(e, id) {
 .postwrap:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 2px;
+}
+.tagrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 4px 0;
+}
+.tag {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  background: var(--card);
+  padding: 4px 12px;
+  border-radius: 99px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tag:hover {
+  color: var(--ink);
+  border-color: rgba(0, 0, 0, 0.28);
+}
+.more {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
 }
 .hint {
   color: var(--ink-3);

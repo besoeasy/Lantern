@@ -35,6 +35,19 @@ export async function getCachedFeed(kinds, limit = 100) {
     .toArray();
 }
 
+export async function getCachedTag(tag, limit = 100) {
+  const cutoff = Math.floor(Date.now() / 1000) - THIRTY_DAYS;
+  const all = await db.events
+    .where("created_at")
+    .above(cutoff)
+    .filter((ev) => (ev.tags || []).some(([t, v]) => t === "t" && v === tag))
+    .toArray();
+  return all
+    .filter((ev) => (ev.tags || []).some(([t, v]) => t === "client" && v === "lantern"))
+    .sort((a, b) => b.created_at - a.created_at)
+    .slice(0, limit);
+}
+
 export async function pruneCache() {
   const cutoff = Math.floor(Date.now() / 1000) - THIRTY_DAYS;
   await db.events.where("created_at").below(cutoff).delete();
