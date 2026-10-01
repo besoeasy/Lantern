@@ -3,7 +3,6 @@ import * as settings from "./settings.js";
 export const DEFAULT_RELAYS = [
   "wss://nos.lol",
   "wss://relay.primal.net",
-  "wss://relay.damus.io",
   "wss://relay.snort.social",
   "wss://purplerelay.com",
   "wss://nostr.mom",
