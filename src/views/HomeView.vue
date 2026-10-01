@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useFeedStore } from "@/stores/feed.js";
 import { useUserStore } from "@/stores/user.js";
 import { displayHashtags } from "@/lib/nostr.js";
+import ReactionBar from "@/components/ReactionBar.vue";
 import NoteCard from "@/components/NoteCard.vue";
 import PictureCard from "@/components/PictureCard.vue";
 import VideoCard from "@/components/VideoCard.vue";
@@ -120,6 +121,7 @@ function openPost(e, id) {
             +{{ displayHashtags(ev).extra }}
           </span>
         </div>
+        <ReactionBar :ev="ev" />
       </div>
     </div>
     <p v-if="!feed.loading && !visible.length" class="hint">Nothing here yet.</p>

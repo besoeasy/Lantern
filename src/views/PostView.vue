@@ -9,6 +9,7 @@ import VideoCard from "@/components/VideoCard.vue";
 import ArticleCard from "@/components/ArticleCard.vue";
 import MusicCard from "@/components/MusicCard.vue";
 import CommentSection from "@/components/CommentSection.vue";
+import ReactionBar from "@/components/ReactionBar.vue";
 
 const route = useRoute();
 const ev = ref(null);
@@ -91,6 +92,7 @@ async function copyShare() {
       <VideoCard v-else-if="ev.kind === 21 || ev.kind === 22" :ev="ev" />
       <ArticleCard v-else-if="ev.kind === 30023" :ev="ev" />
       <MusicCard v-else-if="ev.kind === 1063" :ev="ev" />
+      <ReactionBar :ev="ev" />
       <div class="raw">
         <div class="raw-head">
           <button class="raw-toggle" @click="showRaw = !showRaw">

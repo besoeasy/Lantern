@@ -332,3 +332,47 @@ export async function postComment(rootEv, text, pubkey) {
   const signed = await signEvent(template);
   return publishEvent(signed);
 }
+
+// NIP-25 emoji reactions (kind 7). Content is the emoji itself; the event is
+// linked via `e` (+`p`), with an `a` address tag for 30023 articles.
+export function isReactionOn(ev, rootEv) {
+  if (!ev || ev.kind !== 7 || !rootEv?.id) return false;
+  if ((ev.tags || []).some(([t, v]) => t === "e" && v === rootEv.id)) return true;
+  if (rootEv.kind === 30023) {
+    const addr = `30023:${rootEv.pubkey}:${tagVal(rootEv, "d")}`;
+    return (ev.tags || []).some(([t, v]) => t === "a" && v === addr);
+  }
+  return false;
+}
+
+export function subscribeReactions(rootEv, onEvent, limit = 200) {
+  const filters = [{ kinds: [7], "#e": [rootEv.id], limit }];
+  if (rootEv.kind === 30023) {
+    const addr = `30023:${rootEv.pubkey}:${tagVal(rootEv, "d")}`;
+    filters.push({ kinds: [7], "#a": [addr], limit });
+  }
+  return pool.subscribeMany(activeRelays(), filters, {
+    onevent: (ev) => {
+      if (!isReactionOn(ev, rootEv)) return;
+      cacheEvent(ev);
+      onEvent?.(ev);
+    },
+  });
+}
+
+export async function postReaction(rootEv, emoji, pubkey) {
+  const tags = [
+    ["e", rootEv.id],
+    ["p", rootEv.pubkey],
+  ];
+  if (rootEv.kind === 30023)
+    tags.push(["a", `30023:${rootEv.pubkey}:${tagVal(rootEv, "d")}`]);
+  const signed = await signEvent({
+    kind: 7,
+    created_at: Math.floor(Date.now() / 1000),
+    content: emoji,
+    tags,
+    pubkey,
+  });
+  return publishEvent(signed);
+}
