@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { ArrowLeft, Braces, Copy, Hourglass, Link2 } from "@lucide/vue";
 import { getEventById } from "@/lib/nostr.js";
+import { useCopy } from "@/composables/useCopy.js";
 import NoteCard from "@/components/NoteCard.vue";
 import PictureCard from "@/components/PictureCard.vue";
 import VideoCard from "@/components/VideoCard.vue";
@@ -16,8 +17,6 @@ const ev = ref(null);
 const loading = ref(true);
 const err = ref("");
 const showRaw = ref(false);
-const copied = ref(false);
-const copiedShare = ref(false);
 const now = ref(Date.now());
 let ticker = null;
 
@@ -88,26 +87,15 @@ function shareUrl() {
   return `${location.origin}${location.pathname}#/post/${route.params.id}`;
 }
 
-async function copyRaw() {
-  copied.value = false;
-  try {
-    await navigator.clipboard.writeText(rawJson.value);
-    copied.value = true;
-    setTimeout(() => (copied.value = false), 1500);
-  } catch {
-    prompt("Copy raw event JSON:", rawJson.value);
-  }
+const { copied, copy: copyText } = useCopy();
+const { copied: copiedShare, copy: copyUrl } = useCopy();
+
+function copyRaw() {
+  copyText(rawJson.value, "Copy raw event JSON:");
 }
 
-async function copyShare() {
-  copiedShare.value = false;
-  try {
-    await navigator.clipboard.writeText(shareUrl());
-    copiedShare.value = true;
-    setTimeout(() => (copiedShare.value = false), 1500);
-  } catch {
-    prompt("Copy shareable URL:", shareUrl());
-  }
+function copyShare() {
+  copyUrl(shareUrl(), "Copy shareable URL:");
 }
 </script>
 

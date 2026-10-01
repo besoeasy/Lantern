@@ -11,6 +11,7 @@ import {
 import { FEED_KINDS, ensureRelays } from "@/lib/relays.js";
 import { getCachedAuthorPosts } from "@/lib/db.js";
 import { ipfsObjectUrl } from "@/lib/ipfs.js";
+import { useCopy } from "@/composables/useCopy.js";
 import { useUserStore } from "@/stores/user.js";
 import NoteCard from "@/components/NoteCard.vue";
 import PictureCard from "@/components/PictureCard.vue";
@@ -32,7 +33,7 @@ const events = ref([]);
 const loadingProfile = ref(true);
 const loadingPosts = ref(true);
 const loginErr = ref("");
-const copiedNpub = ref(false);
+const { copied: copiedNpub, copy: copyText } = useCopy();
 const seen = new Set();
 let sub = null;
 
@@ -110,17 +111,8 @@ function shortNpub(hex) {
   return n ? `${n.slice(0, 10)}…${n.slice(-6)}` : shortPk(hex);
 }
 
-async function copyNpub() {
-  const n = npubOf(pk.value);
-  if (!n) return;
-  copiedNpub.value = false;
-  try {
-    await navigator.clipboard.writeText(n);
-    copiedNpub.value = true;
-    setTimeout(() => (copiedNpub.value = false), 1500);
-  } catch {
-    prompt("Copy npub:", n);
-  }
+function copyNpub() {
+  copyText(npubOf(pk.value), "Copy npub:");
 }
 
 function hasInfo(p) {
