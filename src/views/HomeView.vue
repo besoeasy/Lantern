@@ -160,10 +160,18 @@ function openPost(e, id) {
   margin: 0;
 }
 .pills {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
-  gap: 6px;
+  gap: 2px;
   overflow-x: auto;
-  padding-bottom: 2px;
+  margin: -14px -14px 0;
+  padding: 8px 14px;
+  background: rgba(246, 246, 247, 0.8);
+  backdrop-filter: saturate(1.6) blur(16px);
+  -webkit-backdrop-filter: saturate(1.6) blur(16px);
+  border-bottom: 1px solid var(--line);
   scrollbar-width: none;
 }
 .pills::-webkit-scrollbar {
@@ -171,20 +179,20 @@ function openPost(e, id) {
 }
 .pills button {
   flex-shrink: 0;
-  border: 1px solid var(--line);
-  background: var(--card);
-  padding: 7px 14px;
-  border-radius: 99px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  padding: 7px 10px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  color: var(--ink-2);
+  color: var(--ink-3);
   text-transform: capitalize;
+  white-space: nowrap;
 }
 .pills button.on {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #fff;
+  color: var(--ink);
+  border-bottom-color: var(--ink);
 }
 .list {
   display: grid;
