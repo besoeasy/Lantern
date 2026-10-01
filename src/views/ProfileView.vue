@@ -1,7 +1,7 @@
 <script setup>
 import { onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ArrowLeft, BadgeCheck, BadgeX, Copy, Globe, Zap } from "@lucide/vue";
+import { BadgeCheck, BadgeX, Copy, Globe, Zap } from "@lucide/vue";
 import { nip19 } from "nostr-tools";
 import {
   getAuthorProfile,
@@ -14,6 +14,7 @@ import { ipfsObjectUrl } from "@/lib/ipfs.js";
 import { useCopy } from "@/composables/useCopy.js";
 import { useEventList } from "@/composables/useEventList.js";
 import { useUserStore } from "@/stores/user.js";
+import BackBar from "@/components/BackBar.vue";
 import PostCard from "@/components/PostCard.vue";
 import LoginPrompt from "@/components/LoginPrompt.vue";
 import ReactionBar from "@/components/ReactionBar.vue";
@@ -145,13 +146,7 @@ onUnmounted(() => sub?.close?.());
 
 <template>
   <div class="profile">
-    <div class="topbar">
-      <RouterLink to="/" class="back">
-        <ArrowLeft />
-        <span>Back to feed</span>
-      </RouterLink>
-      <h1 class="title">Profile</h1>
-    </div>
+    <BackBar title="Profile" />
 
     <LoginPrompt
       v-if="!pk"
@@ -242,33 +237,6 @@ onUnmounted(() => sub?.close?.());
 .profile {
   display: grid;
   gap: 12px;
-}
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-}
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13.5px;
-  color: var(--ink);
-  text-decoration: none;
-  font-weight: 700;
-}
-.back svg {
-  width: 16px;
-  height: 16px;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.title {
-  margin: 0;
-  font-size: 17px;
-  letter-spacing: -0.02em;
 }
 .card {
   background: var(--card);

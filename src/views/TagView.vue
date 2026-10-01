@@ -1,11 +1,11 @@
 <script setup>
 import { onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ArrowLeft } from "@lucide/vue";
 import { subscribeTag } from "@/lib/nostr.js";
 import { ensureRelays } from "@/lib/relays.js";
 import { getCachedTag } from "@/lib/db.js";
 import { useEventList } from "@/composables/useEventList.js";
+import BackBar from "@/components/BackBar.vue";
 import PostCard from "@/components/PostCard.vue";
 import ReactionBar from "@/components/ReactionBar.vue";
 
@@ -46,13 +46,7 @@ onUnmounted(() => sub?.close?.());
 
 <template>
   <div class="tagview">
-    <div class="topbar">
-      <RouterLink to="/" class="back">
-        <ArrowLeft />
-        <span>Back to feed</span>
-      </RouterLink>
-      <h1 class="title">#{{ route.params.tag }}</h1>
-    </div>
+    <BackBar :title="`#${route.params.tag}`" />
     <p v-if="loading" class="hint">Syncing relays…</p>
     <div class="list">
       <div
@@ -77,39 +71,6 @@ onUnmounted(() => sub?.close?.());
 .tagview {
   display: grid;
   gap: 12px;
-}
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13.5px;
-  color: var(--ink);
-  text-decoration: none;
-  font-weight: 700;
-}
-.back svg {
-  width: 16px;
-  height: 16px;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.title {
-  margin: 0;
-  font-size: 17px;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 60%;
 }
 .list {
   display: grid;

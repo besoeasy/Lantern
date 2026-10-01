@@ -1,9 +1,10 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { ArrowLeft, Braces, Copy, Hourglass, Link2 } from "@lucide/vue";
+import { Braces, Copy, Hourglass, Link2 } from "@lucide/vue";
 import { getEventById, expiryOf } from "@/lib/nostr.js";
 import { useCopy } from "@/composables/useCopy.js";
+import BackBar from "@/components/BackBar.vue";
 import PostCard from "@/components/PostCard.vue";
 import CommentSection from "@/components/CommentSection.vue";
 import ReactionBar from "@/components/ReactionBar.vue";
@@ -96,17 +97,13 @@ function copyShare() {
 
 <template>
   <div class="post">
-    <div class="topbar">
-      <RouterLink to="/" class="back">
-        <ArrowLeft />
-        <span>Back to feed</span>
-      </RouterLink>
+    <BackBar>
       <button class="share" @click="copyShare" :title="shareUrl()">
         <Link2 />
         <code>{{ shareUrl() }}</code>
         <span class="copied" v-if="copiedShare">Copied!</span>
       </button>
-    </div>
+    </BackBar>
     <p v-if="loading" class="hint">Loading post…</p>
     <p v-else-if="err" class="hint">{{ err }}</p>
     <template v-else-if="ev">
@@ -141,29 +138,6 @@ function copyShare() {
 .post {
   display: grid;
   gap: 12px;
-}
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13.5px;
-  color: var(--ink);
-  text-decoration: none;
-  font-weight: 700;
-}
-.back svg {
-  width: 16px;
-  height: 16px;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 .share {
   display: inline-flex;
