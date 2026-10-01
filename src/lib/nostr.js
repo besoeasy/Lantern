@@ -210,23 +210,55 @@ export async function getEventById(id) {
 }
 
 export function subscribeComments(rootEv, onEvent) {
+  // Separate filters = OR semantics. Split upper/lower tag variants because
+  // combining them in one filter means AND (event must carry both).
   const filters = [];
   if (rootEv.kind === 1) {
     filters.push({ kinds: [1], "#e": [rootEv.id], limit: 100 });
+    filters.push({ kinds: [1111], "#E": [rootEv.id], limit: 100 });
+    filters.push({ kinds: [1111], "#e": [rootEv.id], limit: 100 });
   } else if (rootEv.kind === 30023) {
     const addr = `30023:${rootEv.pubkey}:${tagVal(rootEv, "d")}`;
     filters.push({ kinds: [1111], "#A": [addr], limit: 100 });
+    filters.push({ kinds: [1111], "#a": [addr], limit: 100 });
     filters.push({ kinds: [1111], "#E": [rootEv.id], limit: 100 });
+    filters.push({ kinds: [1111], "#e": [rootEv.id], limit: 100 });
   } else {
+    // kind 1063 / 20 / 21 / 22 replies use E-tag per NIP-22 (some clients lowercase)
     filters.push({ kinds: [1111], "#E": [rootEv.id], limit: 100 });
+    filters.push({ kinds: [1111], "#e": [rootEv.id], limit: 100 });
   }
-  // kind 1063 / 20 / 21 / 22 replies use E-tag per NIP-22
   return pool.subscribeMany(activeRelays(), filters, {
     onevent: (ev) => {
+      // Relays routinely ignore tag filters — verify locally so a post
+      // never renders the whole network's replies.
+      if (!isCommentOn(ev, rootEv)) return;
       cacheEvent(ev);
       onEvent?.(ev);
     },
   });
+}
+
+function hasTagValue(ev, names, value) {
+  return (ev.tags || []).some(([t, v]) => names.includes(t) && v === value);
+}
+
+export function isCommentOn(ev, rootEv) {
+  if (!ev || !rootEv?.id) return false;
+  if (rootEv.kind === 1) {
+    return (
+      (ev.kind === 1 && hasTagValue(ev, ["e"], rootEv.id)) ||
+      (ev.kind === 1111 && hasTagValue(ev, ["E", "e"], rootEv.id))
+    );
+  }
+  if (rootEv.kind === 30023) {
+    const addr = `30023:${rootEv.pubkey}:${tagVal(rootEv, "d")}`;
+    return (
+      ev.kind === 1111 &&
+      (hasTagValue(ev, ["A", "a"], addr) || hasTagValue(ev, ["E", "e"], rootEv.id))
+    );
+  }
+  return ev.kind === 1111 && hasTagValue(ev, ["E", "e"], rootEv.id);
 }
 
 export async function postComment(rootEv, text, pubkey) {

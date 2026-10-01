@@ -1,6 +1,6 @@
 <script setup>
 import { onUnmounted, ref, watch } from "vue";
-import { subscribeComments, postComment, shortPk } from "@/lib/nostr.js";
+import { subscribeComments, postComment, shortPk, isCommentOn } from "@/lib/nostr.js";
 import { useUserStore } from "@/stores/user.js";
 
 const props = defineProps({ root: Object });
@@ -13,6 +13,8 @@ const msg = ref("");
 let sub = null;
 
 function add(ev) {
+  // Second guard at render layer: only replies tagging this post show.
+  if (!isCommentOn(ev, props.root)) return;
   if (seen.has(ev.id)) return;
   seen.add(ev.id);
   comments.value.push(ev);
