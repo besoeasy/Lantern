@@ -132,23 +132,26 @@ async function copyShare() {
       <VideoCard v-else-if="ev.kind === 21 || ev.kind === 22" :ev="ev" />
       <ArticleCard v-else-if="ev.kind === 30023" :ev="ev" />
       <MusicCard v-else-if="ev.kind === 1063" :ev="ev" />
-      <div v-if="expiryText" class="expiry" :class="{ gone: expiryText === 'Expired' }">
-        <Hourglass />
-        <span>{{ expiryText }}</span>
-      </div>
       <ReactionBar :ev="ev" />
-      <div class="raw">
+      <div class="meta-row">
+        <div v-if="expiryText" class="expiry" :class="{ gone: expiryText === 'Expired' }">
+          <Hourglass />
+          <span>{{ expiryText }}</span>
+        </div>
+        <button class="raw-toggle" @click="showRaw = !showRaw">
+          <Braces />
+          <span>{{ showRaw ? "Hide raw JSON" : "Raw JSON" }}</span>
+        </button>
+      </div>
+      <div v-if="showRaw" class="raw">
         <div class="raw-head">
-          <button class="raw-toggle" @click="showRaw = !showRaw">
-            <Braces />
-            <span>{{ showRaw ? "Hide raw JSON" : "Show raw JSON" }}</span>
-          </button>
-          <button v-if="showRaw" class="raw-copy" @click="copyRaw">
+          <span class="raw-label">Raw event</span>
+          <button class="raw-copy" @click="copyRaw">
             <Copy />
             <span>{{ copied ? "Copied!" : "Copy" }}</span>
           </button>
         </div>
-        <pre v-if="showRaw" class="raw-body"><code>{{ rawJson }}</code></pre>
+        <pre class="raw-body"><code>{{ rawJson }}</code></pre>
       </div>
       <CommentSection :root="ev" />
     </template>
@@ -225,7 +228,6 @@ async function copyShare() {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  justify-self: start;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -248,6 +250,16 @@ async function copyShare() {
   border-color: #fecaca;
   background: #fef2f2;
 }
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.meta-row .raw-toggle {
+  margin-left: auto;
+}
 .raw {
   background: var(--card);
   border: 1px solid var(--line);
@@ -259,7 +271,13 @@ async function copyShare() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 10px;
+  padding: 8px 10px 8px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.raw-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
 }
 .raw-toggle,
 .raw-copy {
@@ -289,7 +307,6 @@ async function copyShare() {
 }
 .raw-body {
   margin: 0;
-  border-top: 1px solid var(--line);
   padding: 12px 14px;
   max-height: 320px;
   overflow: auto;
