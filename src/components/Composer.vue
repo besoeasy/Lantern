@@ -10,9 +10,7 @@ import {
   FileText,
   Music,
   Type,
-  Tags,
-  Plus,
-  X,
+  Hash,
 } from "@lucide/vue";
 import { signEvent, publishEvent } from "@/lib/nostr.js";
 import { uploadFile, sha256Hex } from "@/lib/ipfs.js";
@@ -38,8 +36,7 @@ const files = ref([]);
 const busy = ref(false);
 const msg = ref("");
 const ok = ref(false);
-const showTags = ref(false);
-const customTags = ref([{ name: "", value: "" }]);
+const hashtags = ref("");
 
 const tabs = [
   ["note", "Note"],
@@ -55,23 +52,15 @@ function onFiles(e) {
   files.value = [...e.target.files];
 }
 
-function addTagRow() {
-  customTags.value.push({ name: "", value: "" });
-}
-
-function removeTagRow(i) {
-  customTags.value.splice(i, 1);
-  if (!customTags.value.length) customTags.value.push({ name: "", value: "" });
-}
-
-// Rows with an empty name are skipped; a row without a value becomes [name].
-function collectCustomTags() {
+// "#love #car" or "love, car" -> [["t", "love"], ["t", "car"]]
+function collectHashtags() {
+  const seen = new Set();
   const out = [];
-  for (const { name, value } of customTags.value) {
-    const n = name.trim().replace(/\s+/g, "");
-    if (!n) continue;
-    const v = value.trim();
-    out.push(v ? [n, v] : [n]);
+  for (const raw of hashtags.value.split(/[\s,]+/)) {
+    const v = raw.replace(/^#+/, "").trim().toLowerCase();
+    if (!v || seen.has(v)) continue;
+    seen.add(v);
+    out.push(["t", v]);
   }
   return out;
 }
@@ -149,7 +138,7 @@ async function submit() {
       kind,
       created_at: Math.floor(Date.now() / 1000),
       content,
-      tags: [...tags, ...collectCustomTags()],
+      tags: [...tags, ...collectHashtags()],
       pubkey: user.pubkey,
     });
     await publishEvent(signed);
@@ -158,8 +147,7 @@ async function submit() {
     text.value = "";
     title.value = "";
     files.value = [];
-    customTags.value = [{ name: "", value: "" }];
-    showTags.value = false;
+    hashtags.value = "";
     emit("published", signed);
   } catch (e) {
     msg.value = e.message;
@@ -189,27 +177,9 @@ async function submit() {
       rows="3"
       class="in area"
     />
-    <button class="tags-toggle" @click="showTags = !showTags">
-      <Tags />
-      <span>Tags{{ collectCustomTags().length ? ` (${collectCustomTags().length})` : "" }}</span>
-    </button>
-    <div v-if="showTags" class="tagrows">
-      <div v-for="(t, i) in customTags" :key="i" class="tagrow">
-        <input v-model="t.name" placeholder="name · e.g. t" class="in tagname" />
-        <input
-          v-model="t.value"
-          placeholder="value · optional"
-          class="in tagval"
-          @keydown.enter.prevent="addTagRow"
-        />
-        <button class="tagrm" @click="removeTagRow(i)" title="Remove tag">
-          <X />
-        </button>
-      </div>
-      <button class="tagadd" @click="addTagRow">
-        <Plus />
-        <span>Add tag</span>
-      </button>
+    <div class="hashwrap">
+      <Hash />
+      <input v-model="hashtags" placeholder="Hashtags · e.g. #love #car" class="in hash" />
     </div>
     <div class="foot">
       <label
@@ -315,94 +285,27 @@ async function submit() {
   resize: vertical;
   line-height: 1.55;
 }
-.tags-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 0;
-  background: transparent;
-  color: var(--ink-2);
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 2px 2px 8px;
+.hashwrap {
+  position: relative;
+  margin-bottom: 8px;
 }
-.tags-toggle svg {
+.hashwrap svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 15px;
   height: 15px;
   stroke-width: 1.9;
   stroke-linecap: round;
   stroke-linejoin: round;
-}
-.tags-toggle:hover {
-  color: var(--ink);
-}
-.tagrows {
-  display: grid;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-.tagrow {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-.tagrow .in {
-  margin-bottom: 0;
-  padding: 8px 11px;
-  font-size: 13px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-.tagname {
-  flex: 0 0 110px;
-  min-width: 0;
-}
-.tagval {
-  flex: 1;
-  min-width: 0;
-}
-.tagrm {
-  flex-shrink: 0;
-  border: 0;
-  background: transparent;
   color: var(--ink-3);
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
+  pointer-events: none;
 }
-.tagrm:hover {
-  color: #dc2626;
-  background: #fef2f2;
-}
-.tagrm svg {
-  width: 15px;
-  height: 15px;
-  stroke-width: 2;
-}
-.tagadd {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  justify-self: start;
-  border: 1px dashed var(--line);
-  background: transparent;
-  color: var(--ink-2);
-  border-radius: 99px;
-  padding: 6px 14px;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.tagadd:hover {
-  color: var(--ink);
-  border-style: solid;
-}
-.tagadd svg {
-  width: 14px;
-  height: 14px;
-  stroke-width: 2;
+.hashwrap .hash {
+  margin-bottom: 0;
+  padding-left: 32px;
+  font-size: 13px;
 }
 .foot {
   display: flex;
