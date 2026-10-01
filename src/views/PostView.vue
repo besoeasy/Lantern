@@ -1,7 +1,7 @@
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { ArrowLeft, Braces, Copy, Link2 } from "@lucide/vue";
+import { ArrowLeft, Braces, Copy, Hourglass, Link2 } from "@lucide/vue";
 import { getEventById } from "@/lib/nostr.js";
 import NoteCard from "@/components/NoteCard.vue";
 import PictureCard from "@/components/PictureCard.vue";
@@ -18,8 +18,44 @@ const err = ref("");
 const showRaw = ref(false);
 const copied = ref(false);
 const copiedShare = ref(false);
+const now = ref(Date.now());
+let ticker = null;
 
 const rawJson = computed(() => (ev.value ? JSON.stringify(ev.value, null, 2) : ""));
+
+const expiryMs = computed(() => {
+  const exp = ev.value?.tags?.find(([t]) => t === "expiration")?.[1];
+  const ts = Number(exp) * 1000;
+  return Number.isFinite(ts) && ts > 0 ? ts : 0;
+});
+
+// Live D/H/M countdown till the post is gone (NIP-40 expiry)
+const expiryText = computed(() => {
+  if (!expiryMs.value) return "";
+  let s = Math.max(0, Math.floor((expiryMs.value - now.value) / 1000));
+  if (s <= 0) return "Expired";
+  const d = Math.floor(s / 86400);
+  s -= d * 86400;
+  const h = Math.floor(s / 3600);
+  s -= h * 3600;
+  const m = Math.floor(s / 60);
+  const parts = [];
+  if (d) parts.push(`${d}D`);
+  if (h || d) parts.push(`${h}H`);
+  if (m || (!d && !h)) parts.push(`${m}M`);
+  if (!parts.length) parts.push(`${s}S`);
+  return `${parts.join(" ")} left`;
+});
+
+function startTicker() {
+  stopTicker();
+  ticker = setInterval(() => (now.value = Date.now()), 30000);
+}
+
+function stopTicker() {
+  if (ticker) clearInterval(ticker);
+  ticker = null;
+}
 
 async function load(id) {
   loading.value = true;
@@ -38,7 +74,11 @@ async function load(id) {
   }
 }
 
-onMounted(() => load(route.params.id));
+onMounted(() => {
+  load(route.params.id);
+  startTicker();
+});
+onUnmounted(stopTicker);
 watch(
   () => route.params.id,
   (id) => load(id),
@@ -92,6 +132,10 @@ async function copyShare() {
       <VideoCard v-else-if="ev.kind === 21 || ev.kind === 22" :ev="ev" />
       <ArticleCard v-else-if="ev.kind === 30023" :ev="ev" />
       <MusicCard v-else-if="ev.kind === 1063" :ev="ev" />
+      <div v-if="expiryText" class="expiry" :class="{ gone: expiryText === 'Expired' }">
+        <Hourglass />
+        <span>{{ expiryText }}</span>
+      </div>
       <ReactionBar :ev="ev" />
       <div class="raw">
         <div class="raw-head">
@@ -176,6 +220,33 @@ async function copyShare() {
   flex-shrink: 0;
   font-weight: 700;
   color: #15803d;
+}
+.expiry {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  justify-self: start;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+  background: var(--card);
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-variant-numeric: tabular-nums;
+}
+.expiry svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.expiry.gone {
+  color: #dc2626;
+  border-color: #fecaca;
+  background: #fef2f2;
 }
 .raw {
   background: var(--card);
