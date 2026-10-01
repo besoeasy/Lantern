@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from "vue";
-import { Plus, Trash2, RotateCcw, Check, X, Activity, Server, Radio } from "@lucide/vue";
+import { Plus, Trash2, RotateCcw, Check, X, Activity, Server, Radio, CodeXml, ExternalLink } from "@lucide/vue";
 import { useSettingsStore } from "@/stores/settings.js";
 import { useFeedStore } from "@/stores/feed.js";
 
@@ -150,6 +150,25 @@ let copyTimer;
       <p class="sub">
         Your posts, uploads and cache are not affected. Only relay and server lists reset.
       </p>
+    </section>
+
+    <section class="card about">
+      <div class="title">
+        <CodeXml />
+        <h2>About Lantern</h2>
+      </div>
+      <p class="sub">
+        Lantern is open source. Star it, report issues, or contribute on GitHub.
+      </p>
+      <a
+        class="gh-link"
+        href="https://github.com/besoeasy/Lantern"
+        target="_blank"
+        rel="noopener"
+      >
+        <span>github.com/besoeasy/Lantern</span>
+        <ExternalLink />
+      </a>
     </section>
   </div>
 </template>
@@ -406,5 +425,31 @@ h2 {
 }
 .foot .sub {
   margin: 4px 0 0;
+}
+.about .sub {
+  margin-bottom: 10px;
+}
+.gh-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 9px 15px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.gh-link:hover {
+  background: var(--bg);
+}
+.gh-link svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 </style>
