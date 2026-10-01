@@ -1,5 +1,5 @@
 import { SimplePool, getEventHash, nip19 } from "nostr-tools";
-import { DEFAULT_RELAYS, CLIENT_TAG, POW_TARGET, FEED_KINDS, CONTENT_TTL_SECONDS, activeRelays, ensureRelays } from "./relays.js";
+import { CLIENT_TAG, POW_TARGET, FEED_KINDS, CONTENT_TTL_SECONDS, activeRelays, ensureRelays } from "./relays.js";
 import { tagVal } from "./event.js";
 import { cacheEvent } from "./db.js";
 import { db } from "./db.js";

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from "vue";
-import { Plus, Trash2, RotateCcw, Check, X, Activity, Server, Radio, CodeXml, ExternalLink } from "@lucide/vue";
+import { Plus, Trash2, RotateCcw, Activity, Server, Radio, CodeXml, ExternalLink } from "@lucide/vue";
 import { useSettingsStore } from "@/stores/settings.js";
 import { useFeedStore } from "@/stores/feed.js";
 

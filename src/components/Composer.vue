@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import {
   Paperclip,
   Send,
@@ -18,15 +18,76 @@ import { useUserStore } from "@/stores/user.js";
 
 const emit = defineEmits(["published"]);
 
-const ICONS = {
-  note: Type,
-  photo: Image,
-  gallery: Images,
-  reel: Clapperboard,
-  video: Video,
-  blog: FileText,
-  music: Music,
+// One entry per composer tab. This is the single place that knows what a post
+// type is called, which icon it shows, which event kind it publishes, whether
+// it takes attachments or a title, and what its editor says.
+const TABS = {
+  note: {
+    label: "Note",
+    icon: Type,
+    kind: 1,
+    media: true,
+    accept: "",
+    title: false,
+    placeholder: "What is happening?",
+  },
+  photo: {
+    label: "Photo",
+    icon: Image,
+    kind: 20,
+    media: true,
+    accept: "image/*",
+    title: true,
+    placeholder: "What is happening?",
+  },
+  gallery: {
+    label: "Gallery",
+    icon: Images,
+    kind: 20,
+    media: true,
+    accept: "image/*",
+    title: true,
+    placeholder: "What is happening?",
+  },
+  reel: {
+    label: "Reel",
+    icon: Clapperboard,
+    kind: 22,
+    media: true,
+    accept: "video/*",
+    title: true,
+    placeholder: "What is happening?",
+  },
+  video: {
+    label: "Video",
+    icon: Video,
+    kind: 21,
+    media: true,
+    accept: "video/*",
+    title: true,
+    placeholder: "What is happening?",
+  },
+  blog: {
+    label: "Blog",
+    icon: FileText,
+    kind: 30023,
+    media: false,
+    accept: "",
+    title: true,
+    placeholder: "Write in Markdown…",
+  },
+  music: {
+    label: "Music",
+    icon: Music,
+    kind: 36787,
+    media: true,
+    accept: "audio/*",
+    title: false,
+    placeholder: "Description or lyrics…",
+  },
 };
+
+const TAB_KEYS = ["note", "photo", "gallery", "reel", "video", "blog", "music"];
 
 const user = useUserStore();
 const tab = ref("note");
@@ -48,15 +109,7 @@ const musicReleased = ref("");
 const coverFile = ref(null);
 const audioDuration = ref(0);
 
-const tabs = [
-  ["note", "Note"],
-  ["photo", "Photo"],
-  ["gallery", "Gallery"],
-  ["reel", "Reel"],
-  ["video", "Video"],
-  ["blog", "Blog"],
-  ["music", "Music"],
-];
+const spec = computed(() => TABS[tab.value]);
 
 function onFiles(e) {
   files.value = [...e.target.files];
@@ -121,6 +174,84 @@ async function buildImeta(file) {
   return ["imeta", ...entry];
 }
 
+async function imetaTags(list) {
+  const tags = [];
+  for (const f of list) tags.push(await buildImeta(f));
+  return tags;
+}
+
+function unixNow() {
+  return String(Math.floor(Date.now() / 1000));
+}
+
+function slugify(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 64);
+}
+
+// How each tab turns the form into tags. The kind itself comes from TABS.
+const BUILD = {
+  async note() {
+    return imetaTags(files.value);
+  },
+  async photo() {
+    const tags = [];
+    if (title.value) tags.push(["title", title.value]);
+    tags.push(...(await imetaTags(files.value)));
+    if (files.value[0]) tags.push(["m", files.value[0].type || "image/jpeg"]);
+    return tags;
+  },
+  async gallery() {
+    return BUILD.photo();
+  },
+  async reel() {
+    return [["title", title.value || "Reel"], ...(await imetaTags(files.value))];
+  },
+  async video() {
+    return [
+      ["title", title.value || "Video"],
+      ["published_at", unixNow()],
+      ...(await imetaTags(files.value)),
+    ];
+  },
+  async blog() {
+    return [
+      ["d", slugify(title.value) || `post-${Date.now()}`],
+      ["title", title.value || "Untitled"],
+      ["published_at", unixNow()],
+    ];
+  },
+  // Amethyst-compatible music track (kind 36787): title/artist/album/art.
+  async music() {
+    const f = files.value.find((x) => x.type.startsWith("audio")) || files.value[0];
+    if (!f) throw new Error("Pick an audio file");
+    if (!musicTitle.value.trim() || !musicArtist.value.trim())
+      throw new Error("Track title and artist are required");
+    const { url } = await uploadFile(f);
+    const x = await sha256Hex(f).catch(() => "");
+    const tags = [
+      ["d", crypto.randomUUID?.() || `track-${Date.now()}`],
+      ["title", musicTitle.value.trim()],
+      ["artist", musicArtist.value.trim()],
+      ["url", url],
+      ["t", "music"],
+      ...(x ? [["x", x]] : []),
+      ["size", String(f.size)],
+    ];
+    const fmt = audioFormat(f);
+    if (fmt) tags.push(["format", fmt]);
+    if (audioDuration.value > 0) tags.push(["duration", String(audioDuration.value)]);
+    if (coverFile.value) {
+      const art = await uploadFile(coverFile.value);
+      tags.push(["image", art.url]);
+    }
+    if (musicAlbum.value.trim()) tags.push(["album", musicAlbum.value.trim()]);
+    const tn = parseInt(musicTrackNo.value, 10);
+    if (tn > 0) tags.push(["track_number", String(tn)]);
+    if (musicReleased.value.trim()) tags.push(["released", musicReleased.value.trim()]);
+    return tags;
+  },
+};
+
 async function submit() {
   msg.value = "";
   ok.value = false;
@@ -130,79 +261,18 @@ async function submit() {
   }
   busy.value = true;
   try {
-    let kind = 1;
-    let tags = [];
-    const content = text.value;
-
-    if (tab.value === "note") {
-      kind = 1;
-      for (const f of files.value) tags.push(await buildImeta(f));
-    } else if (tab.value === "photo" || tab.value === "gallery") {
-      kind = 20;
-      if (title.value) tags.push(["title", title.value]);
-      for (const f of files.value) tags.push(await buildImeta(f));
-      if (files.value[0]) tags.push(["m", files.value[0].type || "image/jpeg"]);
-    } else if (tab.value === "reel") {
-      kind = 22;
-      tags.push(["title", title.value || "Reel"]);
-      for (const f of files.value) tags.push(await buildImeta(f));
-    } else if (tab.value === "video") {
-      kind = 21;
-      tags.push(["title", title.value || "Video"]);
-      tags.push(["published_at", String(Math.floor(Date.now() / 1000))]);
-      for (const f of files.value) tags.push(await buildImeta(f));
-    } else if (tab.value === "blog") {
-      kind = 30023;
-      tags.push([
-        "d",
-        title.value
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .slice(0, 64) || `post-${Date.now()}`,
-      ]);
-      tags.push(["title", title.value || "Untitled"]);
-      tags.push(["published_at", String(Math.floor(Date.now() / 1000))]);
-    } else if (tab.value === "music") {
-      // Amethyst-compatible music track (kind 36787): title/artist/album/art.
-      kind = 36787;
-      const f = files.value.find((x) => x.type.startsWith("audio")) || files.value[0];
-      if (!f) throw new Error("Pick an audio file");
-      if (!musicTitle.value.trim() || !musicArtist.value.trim())
-        throw new Error("Track title and artist are required");
-      const { url } = await uploadFile(f);
-      const x = await sha256Hex(f).catch(() => "");
-      tags = [
-        ["d", crypto.randomUUID?.() || `track-${Date.now()}`],
-        ["title", musicTitle.value.trim()],
-        ["artist", musicArtist.value.trim()],
-        ["url", url],
-        ["t", "music"],
-        ...(x ? [["x", x]] : []),
-        ["size", String(f.size)],
-      ];
-      const fmt = audioFormat(f);
-      if (fmt) tags.push(["format", fmt]);
-      if (audioDuration.value > 0) tags.push(["duration", String(audioDuration.value)]);
-      if (coverFile.value) {
-        const art = await uploadFile(coverFile.value);
-        tags.push(["image", art.url]);
-      }
-      if (musicAlbum.value.trim()) tags.push(["album", musicAlbum.value.trim()]);
-      const tn = parseInt(musicTrackNo.value, 10);
-      if (tn > 0) tags.push(["track_number", String(tn)]);
-      if (musicReleased.value.trim()) tags.push(["released", musicReleased.value.trim()]);
-    }
+    const tags = await BUILD[tab.value]();
 
     confirmDraft();
     const signed = await signEvent({
-      kind,
+      kind: spec.value.kind,
       created_at: Math.floor(Date.now() / 1000),
-      content,
+      content: text.value,
       tags: [...tags, ...tagChips.value.map((v) => ["t", v])],
       pubkey: user.pubkey,
     });
     await publishEvent(signed);
-    msg.value = `Published · kind ${kind}`;
+    msg.value = `Published · kind ${spec.value.kind}`;
     ok.value = true;
     text.value = "";
     title.value = "";
@@ -228,17 +298,17 @@ async function submit() {
 <template>
   <section class="composer" id="composer">
     <div class="seg">
-      <button v-for="[k, label] in tabs" :key="k" :class="{ on: tab === k }" @click="tab = k">
-        <component :is="ICONS[k]" />
-        {{ label }}
+      <button
+        v-for="k in TAB_KEYS"
+        :key="k"
+        :class="{ on: tab === k }"
+        @click="tab = k"
+      >
+        <component :is="TABS[k].icon" />
+        {{ TABS[k].label }}
       </button>
     </div>
-    <input
-      v-if="tab !== 'note' && tab !== 'music'"
-      v-model="title"
-      placeholder="Title"
-      class="in"
-    />
+    <input v-if="spec.title" v-model="title" placeholder="Title" class="in" />
     <template v-if="tab === 'music'">
       <input v-model="musicTitle" placeholder="Track title *" class="in" />
       <input v-model="musicArtist" placeholder="Artist *" class="in" />
@@ -254,14 +324,7 @@ async function submit() {
       </label>
       <p v-if="audioDuration > 0" class="dur">Duration {{ formatDuration(audioDuration) }} detected</p>
     </template>
-    <textarea
-      v-model="text"
-      :placeholder="
-        tab === 'blog' ? 'Write in Markdown…' : tab === 'music' ? 'Description or lyrics…' : 'What is happening?'
-      "
-      rows="3"
-      class="in area"
-    />
+    <textarea v-model="text" :placeholder="spec.placeholder" rows="3" class="in area" />
     <div class="hashwrap" @click="hashInput?.focus()">
       <span v-for="(c, i) in tagChips" :key="c" class="chip">
         #{{ c }}
@@ -279,7 +342,7 @@ async function submit() {
     </div>
     <div class="foot">
       <label
-        v-if="tab !== 'blog'"
+        v-if="spec.media"
         class="attach"
         :title="files.length ? files.map((f) => f.name).join(', ') : 'Attach'"
       >
@@ -292,15 +355,7 @@ async function submit() {
           multiple
           hidden
           @change="onFiles"
-          :accept="
-            tab === 'music'
-              ? 'audio/*'
-              : tab === 'note'
-                ? ''
-                : tab === 'video' || tab === 'reel'
-                  ? 'video/*'
-                  : 'image/*'
-          "
+          :accept="spec.accept"
         />
       </label>
       <button class="post" :disabled="busy" @click="submit">
