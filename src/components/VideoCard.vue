@@ -1,5 +1,6 @@
 <script setup>
-import { imetaList, shortPk, tagVal } from "@/lib/nostr.js";
+import { imetaList, tagVal } from "@/lib/nostr.js";
+import AuthorLink from "./AuthorLink.vue";
 import IpfsMedia from "./IpfsMedia.vue";
 defineProps({ ev: Object });
 </script>
@@ -14,7 +15,7 @@ defineProps({ ev: Object });
       <IpfsMedia v-for="(m, i) in imetaList(ev)" :key="i" :src="m.url" kind="video" />
     </div>
     <p class="desc">{{ ev.content }}</p>
-    <RouterLink :to="`/profile/${ev.pubkey}`" class="pk">{{ shortPk(ev.pubkey) }}</RouterLink>
+    <AuthorLink :pubkey="ev.pubkey" />
   </article>
 </template>
 

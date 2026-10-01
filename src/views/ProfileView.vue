@@ -10,7 +10,8 @@ import {
 } from "@/lib/nostr.js";
 import { FEED_KINDS, ensureRelays } from "@/lib/relays.js";
 import { getCachedAuthorPosts } from "@/lib/db.js";
-import { ipfsObjectUrl } from "@/lib/ipfs.js";
+import { resolveMediaUrl } from "@/lib/ipfs.js";
+import { initialOf } from "@/lib/format.js";
 import { useCopy } from "@/composables/useCopy.js";
 import { useEventList } from "@/composables/useEventList.js";
 import { useUserStore } from "@/stores/user.js";
@@ -44,18 +45,6 @@ function resolvePk(input) {
     if (d.type === "nprofile") return d.data.pubkey;
   } catch {}
   return "";
-}
-
-async function resolveUrl(u) {
-  if (!u) return "";
-  if (u.startsWith("ipfs://")) {
-    try {
-      return await ipfsObjectUrl(u);
-    } catch {
-      return "";
-    }
-  }
-  return u;
 }
 
 async function verifyNip05(nip05, pubkey) {
@@ -125,8 +114,8 @@ watch(
     } finally {
       loadingProfile.value = false;
     }
-    avatarUrl.value = await resolveUrl(profile.value.picture);
-    bannerUrl.value = await resolveUrl(profile.value.banner);
+    avatarUrl.value = await resolveMediaUrl(profile.value.picture);
+    bannerUrl.value = await resolveMediaUrl(profile.value.banner);
     if (profile.value.nip05) {
       verifyNip05(profile.value.nip05, pk.value)
         .then((ok) => (nip05State.value = ok ? "ok" : "bad"))
@@ -174,7 +163,7 @@ onUnmounted(() => sub?.close?.());
         <div class="who">
           <div class="avatar">
             <img v-if="avatarUrl" :src="avatarUrl" alt="" />
-            <span v-else>{{ (profile.display_name || profile.name || "?").slice(0, 1).toUpperCase() }}</span>
+            <span v-else>{{ initialOf(profile.display_name || profile.name) }}</span>
           </div>
           <div class="names">
             <strong>{{ profile.display_name || profile.name || shortPk(pk) }}</strong>

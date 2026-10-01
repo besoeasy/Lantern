@@ -1,8 +1,9 @@
 <script setup>
 import { onUnmounted, ref, watch } from "vue";
-import { subscribeComments, postComment, shortPk, isCommentOn } from "@/lib/nostr.js";
+import { subscribeComments, postComment, isCommentOn } from "@/lib/nostr.js";
 import { useEventList } from "@/composables/useEventList.js";
 import { useUserStore } from "@/stores/user.js";
+import AuthorLink from "./AuthorLink.vue";
 
 const props = defineProps({ root: Object });
 const user = useUserStore();
@@ -63,7 +64,7 @@ async function submit() {
     </div>
     <p v-if="msg" class="msg">{{ msg }}</p>
     <div v-for="c in comments" :key="c.id" class="c">
-      <div class="meta"><RouterLink :to="`/profile/${c.pubkey}`" class="pk">{{ shortPk(c.pubkey) }}</RouterLink> · k{{ c.kind }}</div>
+      <div class="meta"><AuthorLink :pubkey="c.pubkey" /> · k{{ c.kind }}</div>
       <p>{{ c.content }}</p>
     </div>
     <p v-if="!comments.length" class="hint">No comments yet. Be first.</p>

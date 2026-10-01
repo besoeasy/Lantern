@@ -52,6 +52,19 @@ export async function ipfsObjectUrl(ipfsUrl, { timeoutMs = 45000 } = {}) {
   return url;
 }
 
+// Display-oriented resolution for a URL published in a profile or event:
+// http(s) passes through, ipfs:// becomes a verified blob URL, and anything
+// that fails degrades to "" so callers can fall back.
+export async function resolveMediaUrl(u) {
+  if (!u) return "";
+  if (!u.startsWith("ipfs://")) return u;
+  try {
+    return await ipfsObjectUrl(u);
+  } catch {
+    return "";
+  }
+}
+
 export async function sha256Hex(file) {
   const buf = await file.arrayBuffer();
   const digest = await crypto.subtle.digest("SHA-256", buf);

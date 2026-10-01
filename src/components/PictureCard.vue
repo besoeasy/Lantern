@@ -1,5 +1,7 @@
 <script setup>
-import { imetaList, shortPk, tagVal } from "@/lib/nostr.js";
+import { imetaList, tagVal } from "@/lib/nostr.js";
+import { initialOf } from "@/lib/format.js";
+import AuthorLink from "./AuthorLink.vue";
 import IpfsMedia from "./IpfsMedia.vue";
 defineProps({ ev: Object });
 </script>
@@ -8,10 +10,10 @@ defineProps({ ev: Object });
   <article class="card">
     <header>
       <div class="ring">
-        <div class="avatar">{{ ev.pubkey.slice(0, 1).toUpperCase() }}</div>
+        <div class="avatar">{{ initialOf(ev.pubkey) }}</div>
       </div>
       <div class="who">
-        <RouterLink :to="`/profile/${ev.pubkey}`" class="pk">{{ shortPk(ev.pubkey) }}</RouterLink>
+        <AuthorLink :pubkey="ev.pubkey" />
         <div class="title" v-if="tagVal(ev, 'title')">{{ tagVal(ev, "title") }}</div>
       </div>
     </header>

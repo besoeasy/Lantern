@@ -1,25 +1,19 @@
 <script setup>
-import { imetaList, shortPk } from "@/lib/nostr.js";
+import { imetaList } from "@/lib/nostr.js";
+import { relTime, initialOf } from "@/lib/format.js";
+import AuthorLink from "./AuthorLink.vue";
 import IpfsMedia from "./IpfsMedia.vue";
 
 defineProps({ ev: Object });
-
-function time(t) {
-  const d = new Date(t * 1000);
-  const h = Math.floor((Date.now() - d) / 36e5);
-  if (h < 1) return "now";
-  if (h < 24) return `${h}h`;
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-}
 </script>
 
 <template>
   <article class="card">
     <div class="row">
-      <div class="avatar">{{ ev.pubkey.slice(0, 1).toUpperCase() }}</div>
+      <div class="avatar">{{ initialOf(ev.pubkey) }}</div>
       <div class="meta">
-        <RouterLink :to="`/profile/${ev.pubkey}`" class="pk">{{ shortPk(ev.pubkey) }}</RouterLink>
-        <span class="time">{{ time(ev.created_at) }}</span>
+        <AuthorLink :pubkey="ev.pubkey" />
+        <span class="time">{{ relTime(ev.created_at) }}</span>
       </div>
     </div>
     <p class="text">{{ ev.content }}</p>

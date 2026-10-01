@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { Braces, Copy, Hourglass, Link2 } from "@lucide/vue";
 import { getEventById, expiryOf } from "@/lib/nostr.js";
+import { countdownText } from "@/lib/format.js";
 import { useCopy } from "@/composables/useCopy.js";
 import BackBar from "@/components/BackBar.vue";
 import PostCard from "@/components/PostCard.vue";
@@ -25,22 +26,9 @@ const expiryMs = computed(() => {
 });
 
 // Live D/H/M countdown till the post is gone (NIP-40 expiry)
-const expiryText = computed(() => {
-  if (!expiryMs.value) return "";
-  let s = Math.max(0, Math.floor((expiryMs.value - now.value) / 1000));
-  if (s <= 0) return "Expired";
-  const d = Math.floor(s / 86400);
-  s -= d * 86400;
-  const h = Math.floor(s / 3600);
-  s -= h * 3600;
-  const m = Math.floor(s / 60);
-  const parts = [];
-  if (d) parts.push(`${d}D`);
-  if (h || d) parts.push(`${h}H`);
-  if (m || (!d && !h)) parts.push(`${m}M`);
-  if (!parts.length) parts.push(`${s}S`);
-  return `${parts.join(" ")} left`;
-});
+const expiryText = computed(() =>
+  expiryMs.value ? countdownText(expiryMs.value - now.value) : "",
+);
 
 function startTicker() {
   stopTicker();

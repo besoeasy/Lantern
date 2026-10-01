@@ -1,5 +1,6 @@
 <script setup>
-import { shortPk, tagVal } from "@/lib/nostr.js";
+import { tagVal } from "@/lib/nostr.js";
+import AuthorLink from "./AuthorLink.vue";
 defineProps({ ev: Object });
 </script>
 
@@ -9,7 +10,7 @@ defineProps({ ev: Object });
     <h3>{{ tagVal(ev, "title") || "Untitled" }}</h3>
     <p class="sum" v-if="tagVal(ev, 'summary')">{{ tagVal(ev, "summary") }}</p>
     <p class="body">{{ ev.content.slice(0, 400) }}{{ ev.content.length > 400 ? "…" : "" }}</p>
-    <RouterLink :to="`/profile/${ev.pubkey}`" class="pk">{{ shortPk(ev.pubkey) }}</RouterLink>
+    <AuthorLink :pubkey="ev.pubkey" />
   </article>
 </template>
 

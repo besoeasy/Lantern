@@ -1,7 +1,8 @@
 <script setup>
 import { computed } from "vue";
 import { Music as MusicNoteIcon } from "@lucide/vue";
-import { shortPk, tagVal, formatDuration } from "@/lib/nostr.js";
+import { tagVal, formatDuration } from "@/lib/nostr.js";
+import AuthorLink from "./AuthorLink.vue";
 import IpfsMedia from "./IpfsMedia.vue";
 import HashtagPills from "./HashtagPills.vue";
 
@@ -62,7 +63,7 @@ const metaLine = computed(() => {
       <IpfsMedia :src="tagVal(ev, 'url')" kind="audio" />
       <p class="cap">{{ ev.content }}</p>
     </template>
-    <RouterLink :to="`/profile/${ev.pubkey}`" class="pk">{{ shortPk(ev.pubkey) }}</RouterLink>
+    <AuthorLink :pubkey="ev.pubkey" />
   </article>
 </template>
 
