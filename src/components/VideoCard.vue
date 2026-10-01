@@ -42,10 +42,12 @@ defineProps({ ev: Object });
   color: #09090b;
   padding: 3px 9px;
   border-radius: 99px;
+  flex-shrink: 0;
 }
 .t {
   font-size: 14px;
   letter-spacing: -0.01em;
+  min-width: 0;
 }
 .vids {
   display: grid;
@@ -59,6 +61,7 @@ defineProps({ ev: Object });
   color: #d4d4d8;
   line-height: 1.6;
   margin: 10px 0 0;
+  overflow-wrap: anywhere;
 }
 .pk {
   font-size: 11.5px;

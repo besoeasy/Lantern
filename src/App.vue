@@ -67,14 +67,14 @@ body {
   max-width: 600px;
   margin: 0 auto;
   min-height: 100vh;
-  padding-bottom: 92px;
+  padding-bottom: calc(92px + env(safe-area-inset-bottom));
 }
 .main {
   padding: 14px 14px 0;
 }
 .tabs {
   position: fixed;
-  bottom: 14px;
+  bottom: calc(14px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 28px);

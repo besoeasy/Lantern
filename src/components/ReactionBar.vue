@@ -120,9 +120,6 @@ async function react(emoji) {
   border-color: var(--ink);
   background: var(--ink);
 }
-.r.on span:first-child {
-  filter: grayscale(0);
-}
 .n {
   font-size: 12px;
   font-weight: 700;

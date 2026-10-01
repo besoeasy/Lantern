@@ -120,6 +120,7 @@ button {
 .c p {
   margin: 4px 0 0;
   line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 .meta {
   font-size: 12px;

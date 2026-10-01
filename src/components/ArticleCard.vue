@@ -45,6 +45,7 @@ h3 {
   font-size: 14px;
   line-height: 1.7;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   color: #292524;
   margin: 0;
 }

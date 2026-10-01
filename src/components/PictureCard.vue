@@ -77,5 +77,6 @@ header {
   margin: 0;
   font-size: 13.5px;
   line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 </style>

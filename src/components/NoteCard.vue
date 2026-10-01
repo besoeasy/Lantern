@@ -75,6 +75,7 @@ function time(t) {
 .text {
   margin: 10px 0 0;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   line-height: 1.6;
   font-size: 14.5px;
   letter-spacing: -0.005em;

@@ -63,6 +63,7 @@ defineProps({ ev: Object });
   color: #e4e4e7;
   line-height: 1.6;
   margin: 10px 0 0;
+  overflow-wrap: anywhere;
 }
 .pk {
   font-size: 11.5px;
