@@ -15,6 +15,8 @@ import { signEvent, publishEvent } from "@/lib/nostr.js";
 import { uploadFile, sha256Hex } from "@/lib/ipfs.js";
 import { useUserStore } from "@/stores/user.js";
 
+const emit = defineEmits(["published"]);
+
 const ICONS = {
   tweet: Type,
   photo: Image,
@@ -130,6 +132,7 @@ async function submit() {
     text.value = "";
     title.value = "";
     files.value = [];
+    emit("published", signed);
   } catch (e) {
     msg.value = e.message;
   } finally {

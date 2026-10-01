@@ -97,7 +97,8 @@ export async function signEvent(template) {
     kind: template.kind,
     created_at: template.created_at,
     content: template.content ?? "",
-    tags: [...(template.tags || []), ["client", CLIENT_TAG]],
+    // Replace any caller-supplied client tag so every Lantern post carries one canonical id.
+    tags: [...(template.tags || []).filter(([t]) => t !== "client"), ["client", CLIENT_TAG]],
     pubkey: template.pubkey,
   };
   if (!base.pubkey) throw new Error("Missing pubkey: login first.");
@@ -130,8 +131,13 @@ export async function publishEvent(signed) {
 }
 
 export function subscribeFeed(kinds, onEvent, limit = 100) {
-  return pool.subscribeMany(activeRelays(), [{ kinds, limit }], {
+  // Relay-side prefilter keeps the global feed scoped to this client.
+  // Not every relay indexes single-letter generic tags like `client`,
+  // so callers must still drop non-Lantern events locally (see isLanternEvent / feed store).
+  const filter = { kinds, limit, "#client": [CLIENT_TAG] };
+  return pool.subscribeMany(activeRelays(), [filter], {
     onevent: (ev) => {
+      if (!isLanternEvent(ev)) return;
       cacheEvent(ev);
       onEvent?.(ev);
     },
@@ -177,6 +183,10 @@ export function ipfsToHttp(ipfsUrl) {
 
 export function tagVal(ev, name) {
   return ev.tags?.find(([t]) => t === name)?.[1] || "";
+}
+
+export function isLanternEvent(ev) {
+  return (ev.tags || []).some(([t, v]) => t === "client" && v === CLIENT_TAG);
 }
 
 export async function getEventById(id) {

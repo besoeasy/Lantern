@@ -4,7 +4,6 @@ import { useRoute, useRouter } from "vue-router";
 import { Copy, ExternalLink } from "@lucide/vue";
 import { useFeedStore } from "@/stores/feed.js";
 import { useUserStore } from "@/stores/user.js";
-import Composer from "@/components/Composer.vue";
 import NoteCard from "@/components/NoteCard.vue";
 import PictureCard from "@/components/PictureCard.vue";
 import VideoCard from "@/components/VideoCard.vue";
@@ -75,14 +74,12 @@ async function copyLink(id) {
   <div class="home">
     <div class="login" v-if="!user.pubkey">
       <div class="login-txt">
-        <strong>Join the feed</strong>
-        <span>Connect a NIP-07 extension to post & comment.</span>
+        <strong>Join the discussion</strong>
+        <span>Connect a NIP-07 extension to comment.</span>
       </div>
       <button @click="login" :disabled="user.busy">{{ user.busy ? "…" : "Login" }}</button>
     </div>
     <p v-if="loginErr" class="err">{{ loginErr }}</p>
-
-    <Composer v-if="user.pubkey" />
 
     <div class="pills">
       <button

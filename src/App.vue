@@ -6,13 +6,6 @@ import { House, Images, Clapperboard, Music, Plus, Settings } from "@lucide/vue"
 const route = useRoute();
 const tab = computed(() => route.query.tab || "all");
 const isActive = (t) => (t === "all" ? tab.value === "all" || !route.query.tab : tab.value === t);
-
-// #composer as an href is a router path in hash mode, so scroll manually
-function scrollToComposer() {
-  const el = document.getElementById("composer");
-  if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-  else window.scrollTo({ top: 0, behavior: "smooth" });
-}
 </script>
 
 <template>
@@ -33,9 +26,9 @@ function scrollToComposer() {
         <Images />
         <span>Photos</span>
       </RouterLink>
-      <button class="tab create" title="Create" @click.prevent="scrollToComposer">
+      <RouterLink to="/compose" class="tab create" title="Create" :class="{ on: route.name === 'compose' }">
         <span class="plus"><Plus /></span>
-      </button>
+      </RouterLink>
       <RouterLink to="/?tab=videos" class="tab" :class="{ on: isActive('videos') }">
         <Clapperboard />
         <span>Reels</span>
