@@ -3,15 +3,6 @@
 // Docs: https://github.com/besoeasy/originless
 import { getSettings } from "./settings.js";
 
-let heliaNode = null;
-
-async function getHelia() {
-  if (heliaNode) return heliaNode;
-  const { createHelia } = await import("helia");
-  heliaNode = await createHelia();
-  return heliaNode;
-}
-
 export function originlessServers() {
   return getSettings().originless;
 }
@@ -44,14 +35,17 @@ export async function uploadFile(file) {
 
 const objUrlCache = new Map();
 
-export async function ipfsObjectUrl(ipfsUrl) {
+// NOTE: `verifiedFetch` here is the singleton `(resource, options?) => Response`.
+// It manages its own Helia node (delegated routing + trustless-gateway.link
+// fallback). It is NOT a factory — calling `verifiedFetch(heliaNode)` treats
+// the node as a fetch resource and nothing ever renders.
+export async function ipfsObjectUrl(ipfsUrl, { timeoutMs = 45000 } = {}) {
   const cid = String(ipfsUrl).replace("ipfs://", "").split("/")[0];
-  if (!cid) return "";
+  if (!cid) throw new Error("bad ipfs URL");
   if (objUrlCache.has(cid)) return objUrlCache.get(cid);
-  const h = await getHelia();
   const { verifiedFetch } = await import("@helia/verified-fetch");
-  const vf = verifiedFetch(h);
-  const res = await vf(`ipfs://${cid}`);
+  const res = await verifiedFetch(`ipfs://${cid}`, { signal: AbortSignal.timeout(timeoutMs) });
+  if (!res.ok) throw new Error(`IPFS fetch failed (HTTP ${res.status})`);
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   objUrlCache.set(cid, url);

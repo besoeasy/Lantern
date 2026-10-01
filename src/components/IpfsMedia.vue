@@ -5,25 +5,28 @@ import { ipfsObjectUrl } from "@/lib/ipfs.js";
 const props = defineProps({ src: String, kind: { type: String, default: "img" } });
 const objUrl = ref("");
 const err = ref("");
+const attempt = ref(0);
 
-watch(
-  () => props.src,
-  async (s) => {
-    objUrl.value = "";
-    err.value = "";
-    if (!s) return;
-    if (!s.startsWith("ipfs://")) {
-      objUrl.value = s;
-      return;
-    }
-    try {
-      objUrl.value = await ipfsObjectUrl(s);
-    } catch {
-      err.value = "Could not fetch from IPFS";
-    }
-  },
-  { immediate: true },
-);
+async function load(s) {
+  objUrl.value = "";
+  err.value = "";
+  if (!s) return;
+  if (!s.startsWith("ipfs://")) {
+    objUrl.value = s;
+    return;
+  }
+  try {
+    objUrl.value = await ipfsObjectUrl(s);
+  } catch (e) {
+    err.value = e?.name === "TimeoutError" ? "IPFS fetch timed out" : e?.message || "Could not fetch from IPFS";
+  }
+}
+
+watch(() => [props.src, attempt.value], () => load(props.src), { immediate: true });
+
+function retry() {
+  attempt.value++;
+}
 </script>
 
 <template>
@@ -37,7 +40,10 @@ watch(
       preload="metadata"
     />
     <audio v-else-if="kind === 'audio' && objUrl" :src="objUrl" controls preload="metadata" />
-    <div v-else-if="err" class="state err">{{ err }}</div>
+    <div v-else-if="err" class="state err">
+      <span>{{ err }}</span>
+      <button class="retry" @click.stop="retry">Retry</button>
+    </div>
     <div v-else class="state shimmer" />
   </div>
 </template>
@@ -77,5 +83,16 @@ watch(
   background: var(--bg);
   border: 1px dashed var(--line);
   padding: 20px;
+  gap: 10px;
+}
+.retry {
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 99px;
+  padding: 7px 18px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
 }
 </style>
