@@ -96,8 +96,6 @@ const metaLine = computed(() => {
   width: 40px;
   height: 40px;
   stroke-width: 1.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
   color: #71717a;
 }
 .player :deep(audio) {
@@ -131,8 +129,6 @@ const metaLine = computed(() => {
   height: 15px;
   flex-shrink: 0;
   stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
   color: #a1a1aa;
 }
 .artist span {

@@ -151,8 +151,6 @@ function copyShare() {
   height: 14px;
   flex-shrink: 0;
   stroke-width: 1.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 .share code {
   overflow: hidden;
@@ -183,8 +181,6 @@ function copyShare() {
   width: 14px;
   height: 14px;
   stroke-width: 1.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 .expiry.gone {
   color: #dc2626;
@@ -243,8 +239,6 @@ function copyShare() {
   width: 14px;
   height: 14px;
   stroke-width: 1.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 .raw-body {
   margin: 0;

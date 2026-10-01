@@ -44,7 +44,7 @@ function retry() {
       <span>{{ err }}</span>
       <button class="retry" @click.stop="retry">Retry</button>
     </div>
-    <div v-else class="state shimmer" />
+    <div v-else class="state shimmer sk" />
   </div>
 </template>
 
@@ -67,16 +67,6 @@ function retry() {
   display: grid;
   place-items: center;
   font-size: 12.5px;
-}
-.shimmer {
-  background: linear-gradient(100deg, #ececee 30%, #f7f7f8 45%, #ececee 60%);
-  background-size: 200% 100%;
-  animation: sh 1.4s infinite linear;
-}
-@keyframes sh {
-  to {
-    background-position: -200% 0;
-  }
 }
 .err {
   color: var(--ink-3);

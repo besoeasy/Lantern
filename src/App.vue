@@ -107,8 +107,6 @@ body {
   width: 22px;
   height: 22px;
   stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 .tab.on {
   color: var(--ink);
@@ -130,5 +128,18 @@ body {
   width: 24px;
   height: 24px;
   stroke-width: 2.2;
+}
+
+/* Loading shimmer. Used by the profile skeleton and by media placeholders,
+   which each used to spell out the same gradient and keyframes. */
+.sk {
+  background: linear-gradient(100deg, #ececee 30%, #f7f7f8 45%, #ececee 60%);
+  background-size: 200% 100%;
+  animation: sh 1.4s infinite linear;
+}
+@keyframes sh {
+  to {
+    background-position: -200% 0;
+  }
 }
 </style>

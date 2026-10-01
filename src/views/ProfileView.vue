@@ -222,32 +222,18 @@ onUnmounted(() => sub?.close?.());
 }
 .skeleton .banner.sk {
   height: 120px;
-  background: linear-gradient(100deg, #ececee 30%, #f7f7f8 45%, #ececee 60%);
-  background-size: 200% 100%;
-  animation: sh 1.4s infinite linear;
-}
-@keyframes sh {
-  to {
-    background-position: -200% 0;
-  }
 }
 .skline {
   display: block;
   height: 16px;
   width: 140px;
   border-radius: 6px;
-  background: linear-gradient(100deg, #ececee 30%, #f7f7f8 45%, #ececee 60%);
-  background-size: 200% 100%;
-  animation: sh 1.4s infinite linear;
 }
 .skline.short {
   height: 12px;
   width: 90px;
 }
 .skeleton .avatar.sk {
-  background: linear-gradient(100deg, #ececee 30%, #f7f7f8 45%, #ececee 60%);
-  background-size: 200% 100%;
-  animation: sh 1.4s infinite linear;
   border-color: var(--card);
 }
 .who {
@@ -316,8 +302,6 @@ onUnmounted(() => sub?.close?.());
   width: 13px;
   height: 13px;
   stroke-width: 1.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 .empty {
   margin: 10px 16px 0;
@@ -364,8 +348,6 @@ onUnmounted(() => sub?.close?.());
   width: 14px;
   height: 14px;
   stroke-width: 1.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 .m .ok {
   color: #15803d;

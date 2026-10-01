@@ -449,7 +449,5 @@ h2 {
   width: 15px;
   height: 15px;
   stroke-width: 1.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 </style>

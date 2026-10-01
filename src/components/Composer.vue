@@ -354,8 +354,6 @@ async function submit() {
   width: 15px;
   height: 15px;
   stroke-width: 1.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 .seg button.on {
   background: var(--card);
@@ -413,8 +411,6 @@ async function submit() {
   width: 16px;
   height: 16px;
   stroke-width: 1.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
   flex-shrink: 0;
 }
 .coverpick span {
@@ -508,8 +504,6 @@ async function submit() {
   width: 18px;
   height: 18px;
   stroke-width: 1.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 .post {
   display: flex;
