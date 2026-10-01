@@ -1,7 +1,7 @@
 <script setup>
 import { onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ArrowLeft, BadgeCheck, BadgeX, Globe, Zap } from "@lucide/vue";
+import { ArrowLeft, BadgeCheck, BadgeX, Copy, Globe, Zap } from "@lucide/vue";
 import { nip19 } from "nostr-tools";
 import {
   getAuthorProfile,
@@ -32,6 +32,7 @@ const events = ref([]);
 const loadingProfile = ref(true);
 const loadingPosts = ref(true);
 const loginErr = ref("");
+const copiedNpub = ref(false);
 const seen = new Set();
 let sub = null;
 
@@ -94,6 +95,36 @@ async function login() {
   } catch (e) {
     loginErr.value = e.message;
   }
+}
+
+function npubOf(hex) {
+  try {
+    return nip19.npubEncode(hex);
+  } catch {
+    return "";
+  }
+}
+
+function shortNpub(hex) {
+  const n = npubOf(hex);
+  return n ? `${n.slice(0, 10)}…${n.slice(-6)}` : shortPk(hex);
+}
+
+async function copyNpub() {
+  const n = npubOf(pk.value);
+  if (!n) return;
+  copiedNpub.value = false;
+  try {
+    await navigator.clipboard.writeText(n);
+    copiedNpub.value = true;
+    setTimeout(() => (copiedNpub.value = false), 1500);
+  } catch {
+    prompt("Copy npub:", n);
+  }
+}
+
+function hasInfo(p) {
+  return !!(p.name || p.display_name || p.about || p.picture || p.nip05 || p.website || p.lud16 || p.lud06);
 }
 
 watch(
@@ -161,9 +192,20 @@ onUnmounted(() => sub?.close?.());
     <p v-if="loginErr" class="err">{{ loginErr }}</p>
 
     <template v-if="pk">
-      <section class="card">
-        <div v-if="bannerUrl" class="banner">
-          <img :src="bannerUrl" alt="" />
+      <section v-if="loadingProfile" class="card skeleton">
+        <div class="banner sk"></div>
+        <div class="who">
+          <div class="avatar sk"></div>
+          <div class="names">
+            <strong class="skline sk"></strong>
+            <span class="skline short sk"></span>
+          </div>
+        </div>
+      </section>
+      <section v-else class="card">
+        <div class="banner">
+          <img v-if="bannerUrl" :src="bannerUrl" alt="" />
+          <div v-else class="banner-fallback"></div>
         </div>
         <div class="who">
           <div class="avatar">
@@ -177,8 +219,18 @@ onUnmounted(() => sub?.close?.());
             </span>
             <span v-else class="handle">{{ shortPk(pk) }}</span>
           </div>
+          <button class="npub" @click="copyNpub" :title="npubOf(pk)">
+            <Copy />
+            <span>{{ copiedNpub ? "Copied!" : shortNpub(pk) }}</span>
+          </button>
         </div>
         <p v-if="profile.about" class="about">{{ profile.about }}</p>
+        <p v-else-if="!hasInfo(profile)" class="empty">
+          No profile info published yet — set a name, avatar and bio from any Nostr client.
+        </p>
+        <div class="stats">
+          <span><strong>{{ events.length }}</strong> {{ events.length === 1 ? "post" : "posts" }}</span>
+        </div>
         <div class="meta">
           <span v-if="profile.nip05" class="m">
             <BadgeCheck v-if="nip05State === 'ok'" class="ok" />
@@ -308,6 +360,40 @@ onUnmounted(() => sub?.close?.());
   display: block;
   background: var(--bg);
 }
+.banner-fallback {
+  height: 120px;
+  background: linear-gradient(120deg, #0a0a0a 0%, #3f3f46 55%, #71717a 100%);
+}
+.skeleton .banner.sk {
+  height: 120px;
+  background: linear-gradient(100deg, #ececee 30%, #f7f7f8 45%, #ececee 60%);
+  background-size: 200% 100%;
+  animation: sh 1.4s infinite linear;
+}
+@keyframes sh {
+  to {
+    background-position: -200% 0;
+  }
+}
+.skline {
+  display: block;
+  height: 16px;
+  width: 140px;
+  border-radius: 6px;
+  background: linear-gradient(100deg, #ececee 30%, #f7f7f8 45%, #ececee 60%);
+  background-size: 200% 100%;
+  animation: sh 1.4s infinite linear;
+}
+.skline.short {
+  height: 12px;
+  width: 90px;
+}
+.skeleton .avatar.sk {
+  background: linear-gradient(100deg, #ececee 30%, #f7f7f8 45%, #ececee 60%);
+  background-size: 200% 100%;
+  animation: sh 1.4s infinite linear;
+  border-color: var(--card);
+}
 .who {
   display: flex;
   align-items: center;
@@ -349,6 +435,52 @@ onUnmounted(() => sub?.close?.());
 .handle {
   font-size: 12.5px;
   color: var(--ink-3);
+}
+.npub {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 99px;
+  cursor: pointer;
+}
+.npub:hover {
+  color: var(--ink);
+  border-color: rgba(0, 0, 0, 0.28);
+}
+.npub svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.empty {
+  margin: 10px 16px 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  background: var(--bg);
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.stats {
+  display: flex;
+  gap: 14px;
+  padding: 10px 16px 0;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.stats strong {
+  color: var(--ink);
 }
 .about {
   margin: 10px 16px 0;
