@@ -1,8 +1,9 @@
 <script setup>
 import { computed } from "vue";
 import { Music as MusicNoteIcon } from "@lucide/vue";
-import { shortPk, tagVal, displayHashtags, formatDuration } from "@/lib/nostr.js";
+import { shortPk, tagVal, formatDuration } from "@/lib/nostr.js";
 import IpfsMedia from "./IpfsMedia.vue";
+import HashtagPills from "./HashtagPills.vue";
 
 const props = defineProps({ ev: Object });
 const ev = computed(() => props.ev);
@@ -27,8 +28,6 @@ const metaLine = computed(() => {
   if (duration.value) parts.push(duration.value);
   return parts.join(" · ");
 });
-
-const topics = computed(() => displayHashtags(ev.value));
 </script>
 
 <template>
@@ -49,17 +48,7 @@ const topics = computed(() => displayHashtags(ev.value));
           <span v-if="explicit" class="e">E</span>
         </div>
         <p v-if="ev.content" class="desc">{{ ev.content }}</p>
-        <div v-if="topics.shown.length" class="topics">
-          <RouterLink
-            v-for="t in topics.shown"
-            :key="t"
-            :to="`/tag/${encodeURIComponent(t)}`"
-            class="topic"
-          >
-            #{{ t }}
-          </RouterLink>
-          <span v-if="topics.extra" class="more">+{{ topics.extra }}</span>
-        </div>
+        <HashtagPills :ev="ev" variant="dark" />
       </div>
     </template>
     <template v-else>
@@ -172,34 +161,6 @@ const topics = computed(() => displayHashtags(ev.value));
   margin: 4px 0 0;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
-}
-.topics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 4px;
-}
-.topic {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #d4d4d8;
-  text-decoration: none;
-  background: rgba(250, 250, 250, 0.08);
-  padding: 3px 10px;
-  border-radius: 99px;
-  max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.topic:hover {
-  background: rgba(250, 250, 250, 0.16);
-}
-.more {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #71717a;
-  align-self: center;
 }
 .top {
   display: flex;

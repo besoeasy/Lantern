@@ -4,11 +4,7 @@ import { useRoute } from "vue-router";
 import { ArrowLeft, Braces, Copy, Hourglass, Link2 } from "@lucide/vue";
 import { getEventById } from "@/lib/nostr.js";
 import { useCopy } from "@/composables/useCopy.js";
-import NoteCard from "@/components/NoteCard.vue";
-import PictureCard from "@/components/PictureCard.vue";
-import VideoCard from "@/components/VideoCard.vue";
-import ArticleCard from "@/components/ArticleCard.vue";
-import MusicCard from "@/components/MusicCard.vue";
+import PostCard from "@/components/PostCard.vue";
 import CommentSection from "@/components/CommentSection.vue";
 import ReactionBar from "@/components/ReactionBar.vue";
 
@@ -115,11 +111,7 @@ function copyShare() {
     <p v-if="loading" class="hint">Loading post…</p>
     <p v-else-if="err" class="hint">{{ err }}</p>
     <template v-else-if="ev">
-      <NoteCard v-if="ev.kind === 1" :ev="ev" />
-      <PictureCard v-else-if="ev.kind === 20" :ev="ev" />
-      <VideoCard v-else-if="ev.kind === 21 || ev.kind === 22" :ev="ev" />
-      <ArticleCard v-else-if="ev.kind === 30023" :ev="ev" />
-      <MusicCard v-else-if="ev.kind === 1063 || ev.kind === 36787" :ev="ev" />
+      <PostCard :ev="ev" />
       <ReactionBar :ev="ev" />
       <div class="meta-row">
         <div v-if="expiryText" class="expiry" :class="{ gone: expiryText === 'Expired' }">
