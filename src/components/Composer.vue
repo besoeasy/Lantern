@@ -18,7 +18,7 @@ import { useUserStore } from "@/stores/user.js";
 const emit = defineEmits(["published"]);
 
 const ICONS = {
-  tweet: Type,
+  note: Type,
   photo: Image,
   gallery: Images,
   reel: Clapperboard,
@@ -28,7 +28,7 @@ const ICONS = {
 };
 
 const user = useUserStore();
-const tab = ref("tweet");
+const tab = ref("note");
 const text = ref("");
 const title = ref("");
 const files = ref([]);
@@ -37,7 +37,7 @@ const msg = ref("");
 const ok = ref(false);
 
 const tabs = [
-  ["tweet", "Tweet"],
+  ["note", "Note"],
   ["photo", "Photo"],
   ["gallery", "Gallery"],
   ["reel", "Reel"],
@@ -77,7 +77,7 @@ async function submit() {
     let tags = [];
     const content = text.value;
 
-    if (tab.value === "tweet") {
+    if (tab.value === "note") {
       kind = 1;
       for (const f of files.value) tags.push(await buildImeta(f));
     } else if (tab.value === "photo" || tab.value === "gallery") {
@@ -150,7 +150,7 @@ async function submit() {
       </button>
     </div>
     <input
-      v-if="tab !== 'tweet' && tab !== 'music'"
+      v-if="tab !== 'note' && tab !== 'music'"
       v-model="title"
       placeholder="Title"
       class="in"
@@ -179,7 +179,7 @@ async function submit() {
           :accept="
             tab === 'music'
               ? 'audio/*'
-              : tab === 'tweet'
+              : tab === 'note'
                 ? ''
                 : tab === 'video' || tab === 'reel'
                   ? 'video/*'

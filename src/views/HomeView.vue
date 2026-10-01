@@ -18,7 +18,7 @@ const loginErr = ref("");
 
 const FILTERS = {
   all: null,
-  tweets: [1],
+  notes: [1],
   pics: [20],
   videos: [21, 22],
   blogs: [30023],
