@@ -10,7 +10,7 @@ import {
   FileText,
   Music,
   Type,
-  Hash,
+  X,
 } from "@lucide/vue";
 import { signEvent, publishEvent } from "@/lib/nostr.js";
 import { uploadFile, sha256Hex } from "@/lib/ipfs.js";
@@ -36,7 +36,9 @@ const files = ref([]);
 const busy = ref(false);
 const msg = ref("");
 const ok = ref(false);
-const hashtags = ref("");
+const tagChips = ref([]);
+const tagDraft = ref("");
+const hashInput = ref(null);
 
 const tabs = [
   ["note", "Note"],
@@ -52,17 +54,23 @@ function onFiles(e) {
   files.value = [...e.target.files];
 }
 
-// "#love #car" or "love, car" -> [["t", "love"], ["t", "car"]]
-function collectHashtags() {
-  const seen = new Set();
-  const out = [];
-  for (const raw of hashtags.value.split(/[\s,]+/)) {
+// Chip-based hashtags: typing a word + Space/Enter/comma banks it as a chip.
+// No need to type `#` — it's added for display and as the `t` tag value.
+function confirmDraft() {
+  for (const raw of tagDraft.value.split(/[\s,]+/)) {
     const v = raw.replace(/^#+/, "").trim().toLowerCase();
-    if (!v || seen.has(v)) continue;
-    seen.add(v);
-    out.push(["t", v]);
+    if (v && !tagChips.value.includes(v)) tagChips.value.push(v);
   }
-  return out;
+  tagDraft.value = "";
+}
+
+function onHashKey(e) {
+  if (e.key === "," || e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    confirmDraft();
+  } else if (e.key === "Backspace" && !tagDraft.value && tagChips.value.length) {
+    tagChips.value.pop();
+  }
 }
 
 async function buildImeta(file) {
@@ -134,11 +142,12 @@ async function submit() {
       ];
     }
 
+    confirmDraft();
     const signed = await signEvent({
       kind,
       created_at: Math.floor(Date.now() / 1000),
       content,
-      tags: [...tags, ...collectHashtags()],
+      tags: [...tags, ...tagChips.value.map((v) => ["t", v])],
       pubkey: user.pubkey,
     });
     await publishEvent(signed);
@@ -147,7 +156,8 @@ async function submit() {
     text.value = "";
     title.value = "";
     files.value = [];
-    hashtags.value = "";
+    tagChips.value = [];
+    tagDraft.value = "";
     emit("published", signed);
   } catch (e) {
     msg.value = e.message;
@@ -177,9 +187,20 @@ async function submit() {
       rows="3"
       class="in area"
     />
-    <div class="hashwrap">
-      <Hash />
-      <input v-model="hashtags" placeholder="Hashtags · e.g. #love #car" class="in hash" />
+    <div class="hashwrap" @click="hashInput?.focus()">
+      <span v-for="(c, i) in tagChips" :key="c" class="chip">
+        #{{ c }}
+        <button @click.stop="tagChips.splice(i, 1)" title="Remove">
+          <X />
+        </button>
+      </span>
+      <input
+        ref="hashInput"
+        v-model="tagDraft"
+        :placeholder="tagChips.length ? 'Add more…' : 'Hashtags · type + Space'"
+        class="hashin"
+        @keydown="onHashKey"
+      />
     </div>
     <div class="foot">
       <label
@@ -286,26 +307,61 @@ async function submit() {
   line-height: 1.55;
 }
 .hashwrap {
-  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 8px 11px;
   margin-bottom: 8px;
+  background: #fff;
+  cursor: text;
 }
-.hashwrap svg {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 15px;
-  height: 15px;
-  stroke-width: 1.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.hashwrap:focus-within {
+  border-color: rgba(0, 0, 0, 0.28);
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  padding: 3px 6px 3px 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.chip button {
+  border: 0;
+  background: transparent;
   color: var(--ink-3);
-  pointer-events: none;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
 }
-.hashwrap .hash {
-  margin-bottom: 0;
-  padding-left: 32px;
+.chip button:hover {
+  color: #dc2626;
+  background: #fef2f2;
+}
+.chip button svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2.4;
+}
+.hashin {
+  flex: 1;
+  min-width: 140px;
+  border: 0;
+  outline: none;
   font-size: 13px;
+  font-family: inherit;
+  color: var(--ink);
+  background: transparent;
+  padding: 4px 0;
 }
 .foot {
   display: flex;
