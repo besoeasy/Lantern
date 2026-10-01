@@ -10,6 +10,10 @@
     "format": "oxfmt src/"
   },
   "dependencies": {
+    "@helia/verified-fetch": "^8.1.2",
+    "dexie": "^4.4.6",
+    "helia": "^7.1.16",
+    "nostr-tools": "^2.25.2",
     "pinia": "^4.0.3",
     "vue": "^3.5.42",
     "vue-router": "^5.3.1"
