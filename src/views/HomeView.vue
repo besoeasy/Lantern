@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { Copy, ExternalLink } from '@lucide/vue'
 import { useFeedStore } from '@/stores/feed.js'
 import { useUserStore } from '@/stores/user.js'
 import Composer from '@/components/Composer.vue'
@@ -103,8 +104,14 @@ async function copyLink(id) {
         <ArticleCard v-else-if="ev.kind === 30023" :ev="ev" />
         <MusicCard v-else-if="ev.kind === 1063" :ev="ev" />
         <div class="actions">
-          <RouterLink :to="`/post/${ev.id}`" target="_blank" class="open">Open ↗</RouterLink>
-          <button class="copy" @click="copyLink(ev.id)">Copy link</button>
+          <RouterLink :to="`/post/${ev.id}`" target="_blank" class="open">
+            <ExternalLink />
+            <span>Open</span>
+          </RouterLink>
+          <button class="copy" @click="copyLink(ev.id)">
+            <Copy />
+            <span>Copy link</span>
+          </button>
         </div>
       </div>
     </div>
@@ -198,25 +205,34 @@ async function copyLink(id) {
   gap: 8px;
   padding: 8px 4px 0;
 }
-.open {
+.open,
+.copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
-  font-weight: 700;
-  color: var(--ink);
+  font-weight: 600;
   text-decoration: none;
   border: 1px solid var(--line);
   background: var(--card);
-  padding: 5px 13px;
-  border-radius: 99px;
-}
-.copy {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ink-2);
-  border: 1px solid var(--line);
-  background: transparent;
-  padding: 5px 13px;
+  padding: 6px 14px;
   border-radius: 99px;
   cursor: pointer;
+}
+.open {
+  color: var(--ink);
+}
+.copy {
+  color: var(--ink-2);
+  background: transparent;
+}
+.open svg,
+.copy svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .hint {
   color: var(--ink-3);

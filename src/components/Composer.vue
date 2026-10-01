@@ -1,8 +1,29 @@
 <script setup>
 import { ref } from 'vue'
+import {
+  Paperclip,
+  Send,
+  Image,
+  Images,
+  Clapperboard,
+  Video,
+  FileText,
+  Music,
+  Type,
+} from '@lucide/vue'
 import { signEvent, publishEvent } from '@/lib/nostr.js'
 import { uploadFile, sha256Hex } from '@/lib/ipfs.js'
 import { useUserStore } from '@/stores/user.js'
+
+const ICONS = {
+  tweet: Type,
+  photo: Image,
+  gallery: Images,
+  reel: Clapperboard,
+  video: Video,
+  blog: FileText,
+  music: Music,
+}
 
 const user = useUserStore()
 const tab = ref('tweet')
@@ -114,7 +135,13 @@ async function submit() {
 <template>
   <section class="composer" id="composer">
     <div class="seg">
-      <button v-for="[k, label] in tabs" :key="k" :class="{ on: tab === k }" @click="tab = k">
+      <button
+        v-for="[k, label] in tabs"
+        :key="k"
+        :class="{ on: tab === k }"
+        @click="tab = k"
+      >
+        <component :is="ICONS[k]" />
         {{ label }}
       </button>
     </div>
@@ -127,7 +154,7 @@ async function submit() {
     />
     <div class="foot">
       <label v-if="tab !== 'blog'" class="attach" :title="files.length ? files.map((f) => f.name).join(', ') : 'Attach'">
-        <svg viewBox="0 0 24 24"><path d="m21 12-8.5 8.5a5.5 5.5 0 0 1-7.8-7.8L13 4.4a3.7 3.7 0 0 1 5.2 5.2l-8.2 8.2a1.85 1.85 0 0 1-2.6-2.6L14.5 8"/></svg>
+        <Paperclip />
         <span>{{ files.length ? `${files.length} file${files.length > 1 ? 's' : ''}` : 'Media' }}</span>
         <input
           type="file"
@@ -137,7 +164,10 @@ async function submit() {
           :accept="tab === 'music' ? 'audio/*' : tab === 'tweet' ? '' : tab === 'video' || tab === 'reel' ? 'video/*' : 'image/*'"
         />
       </label>
-      <button class="post" :disabled="busy" @click="submit">{{ busy ? 'Publishing…' : 'Post' }}</button>
+      <button class="post" :disabled="busy" @click="submit">
+        <span>{{ busy ? 'Publishing' : 'Post' }}</span>
+        <Send />
+      </button>
     </div>
     <p v-if="msg" class="msg" :class="{ ok }">{{ msg }}</p>
   </section>
@@ -167,15 +197,26 @@ async function submit() {
 }
 .seg button {
   flex: 1 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   border: 0;
   background: transparent;
   border-radius: 11px;
-  padding: 7px 12px;
+  padding: 8px 12px;
   font-size: 12.5px;
   font-weight: 600;
   color: var(--ink-2);
   cursor: pointer;
   white-space: nowrap;
+}
+.seg button svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .seg button.on {
   background: var(--card);
@@ -223,20 +264,27 @@ async function submit() {
 .attach svg {
   width: 18px;
   height: 18px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.8;
+  stroke-width: 1.9;
   stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .post {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   background: var(--ink);
   color: #fff;
   border: 0;
   border-radius: 99px;
-  padding: 9px 26px;
+  padding: 9px 22px;
   font-weight: 700;
   font-size: 13.5px;
   cursor: pointer;
+}
+.post svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2;
 }
 .post:disabled {
   opacity: 0.55;

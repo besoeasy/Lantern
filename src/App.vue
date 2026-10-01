@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
+import { House, Images, Clapperboard, Music, Plus } from '@lucide/vue'
 
 const route = useRoute()
 const tab = computed(() => route.query.tab || 'all')
@@ -25,22 +26,22 @@ function scrollToComposer() {
     </main>
     <nav class="tabs">
       <RouterLink to="/" class="tab" :class="{ on: isActive('all') }">
-        <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1Z"/></svg>
+        <House />
         <span>Home</span>
       </RouterLink>
       <RouterLink to="/?tab=pics" class="tab" :class="{ on: isActive('pics') }">
-        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.3"/></svg>
+        <Images />
         <span>Photos</span>
       </RouterLink>
       <button class="tab create" title="Create" @click.prevent="scrollToComposer">
-        <span class="plus">+</span>
+        <span class="plus"><Plus /></span>
       </button>
       <RouterLink to="/?tab=videos" class="tab" :class="{ on: isActive('videos') }">
-        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="4"/><path d="m10 9.5 5 2.5-5 2.5Z"/></svg>
+        <Clapperboard />
         <span>Reels</span>
       </RouterLink>
       <RouterLink to="/?tab=music" class="tab" :class="{ on: isActive('music') }">
-        <svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v11.5"/><circle cx="6.8" cy="18" r="2.6"/><circle cx="16.8" cy="15.5" r="2.6"/></svg>
+        <Music />
         <span>Music</span>
       </RouterLink>
     </nav>
@@ -139,8 +140,6 @@ body {
 .tab svg {
   width: 22px;
   height: 22px;
-  fill: none;
-  stroke: currentColor;
   stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -156,12 +155,14 @@ body {
   height: 44px;
   display: grid;
   place-items: center;
-  font-size: 26px;
-  font-weight: 300;
-  line-height: 1;
   color: #fff;
   background: var(--ink);
   border-radius: 50%;
   box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.5);
+}
+.plus svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2.2;
 }
 </style>

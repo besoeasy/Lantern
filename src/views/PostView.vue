@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { ArrowLeft } from '@lucide/vue'
 import { getEventById } from '@/lib/nostr.js'
 import NoteCard from '@/components/NoteCard.vue'
 import PictureCard from '@/components/PictureCard.vue'
@@ -42,7 +43,10 @@ function shareUrl() {
 
 <template>
   <div class="post">
-    <RouterLink to="/" class="back">← Feed</RouterLink>
+    <RouterLink to="/" class="back">
+      <ArrowLeft />
+      <span>Back to feed</span>
+    </RouterLink>
     <p v-if="loading" class="hint">Loading post…</p>
     <p v-else-if="err" class="hint">{{ err }}</p>
     <template v-else-if="ev">
@@ -66,10 +70,20 @@ function shareUrl() {
   gap: 12px;
 }
 .back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font-size: 13.5px;
   color: var(--ink);
   text-decoration: none;
   font-weight: 700;
+}
+.back svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .share {
   background: var(--card);

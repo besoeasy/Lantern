@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@helia/verified-fetch": "^8.1.2",
+    "@lucide/vue": "^1.49.0",
     "dexie": "^4.4.6",
     "helia": "^7.1.16",
     "nostr-tools": "^2.25.2",
