@@ -2,9 +2,8 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useFeedStore } from "@/stores/feed.js";
-import PostCard from "@/components/PostCard.vue";
+import PostList from "@/components/PostList.vue";
 import LoginPrompt from "@/components/LoginPrompt.vue";
-import ReactionBar from "@/components/ReactionBar.vue";
 
 const feed = useFeedStore();
 const route = useRoute();
@@ -41,16 +40,6 @@ function setFilter(k) {
 
 onMounted(() => feed.start());
 onUnmounted(() => feed.stop());
-
-function goPost(id) {
-  router.push(`/post/${id}`);
-}
-
-function openPost(e, id) {
-  // Media controls (video/audio) and any nested controls keep their own behavior.
-  if (e.target.closest("button, a, video, audio, input, textarea, select")) return;
-  goPost(id);
-}
 </script>
 
 <template>
@@ -69,21 +58,7 @@ function openPost(e, id) {
     </div>
 
     <p v-if="feed.loading" class="hint">Syncing relays…</p>
-    <div class="list">
-      <div
-        class="postwrap"
-        v-for="ev in visible"
-        :key="ev.id"
-        role="link"
-        tabindex="0"
-        @click="openPost($event, ev.id)"
-        @keydown.enter="goPost(ev.id)"
-        @keydown.space.prevent="goPost(ev.id)"
-      >
-        <PostCard :ev="ev" hashtags />
-        <ReactionBar :ev="ev" />
-      </div>
-    </div>
+    <PostList :events="visible" hashtags />
     <p v-if="!feed.loading && !visible.length" class="hint">Nothing here yet.</p>
   </div>
 </template>
@@ -126,19 +101,6 @@ function openPost(e, id) {
 .pills button.on {
   color: var(--ink);
   border-bottom-color: var(--ink);
-}
-.list {
-  display: grid;
-  gap: 14px;
-}
-.postwrap {
-  display: grid;
-  cursor: pointer;
-  border-radius: var(--radius);
-}
-.postwrap:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
 }
 .hint {
   color: var(--ink-3);

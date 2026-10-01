@@ -1,6 +1,6 @@
 <script setup>
 import { onUnmounted, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { BadgeCheck, BadgeX, Copy, Globe, Zap } from "@lucide/vue";
 import { nip19 } from "nostr-tools";
 import {
@@ -16,12 +16,10 @@ import { useCopy } from "@/composables/useCopy.js";
 import { useEventList } from "@/composables/useEventList.js";
 import { useUserStore } from "@/stores/user.js";
 import BackBar from "@/components/BackBar.vue";
-import PostCard from "@/components/PostCard.vue";
+import PostList from "@/components/PostList.vue";
 import LoginPrompt from "@/components/LoginPrompt.vue";
-import ReactionBar from "@/components/ReactionBar.vue";
 
 const route = useRoute();
-const router = useRouter();
 const user = useUserStore();
 
 const pk = ref("");
@@ -57,15 +55,6 @@ async function verifyNip05(nip05, pubkey) {
   if (!res.ok) return false;
   const data = await res.json();
   return data?.names?.[name] === pubkey;
-}
-
-function goPost(id) {
-  router.push(`/post/${id}`);
-}
-
-function openPost(e, id) {
-  if (e.target.closest("button, a, video, audio, input, textarea, select")) return;
-  goPost(id);
 }
 
 function npubOf(hex) {
@@ -202,21 +191,7 @@ onUnmounted(() => sub?.close?.());
       </section>
 
       <p v-if="loadingPosts" class="hint">Loading posts…</p>
-      <div class="list">
-        <div
-          class="postwrap"
-          v-for="ev in events"
-          :key="ev.id"
-          role="link"
-          tabindex="0"
-          @click="openPost($event, ev.id)"
-          @keydown.enter="goPost(ev.id)"
-          @keydown.space.prevent="goPost(ev.id)"
-        >
-          <PostCard :ev="ev" />
-          <ReactionBar :ev="ev" />
-        </div>
-      </div>
+      <PostList :events="events" />
       <p v-if="!loadingPosts && !events.length" class="hint">No Lantern posts yet.</p>
     </template>
   </div>
@@ -401,19 +376,6 @@ onUnmounted(() => sub?.close?.());
 .m.link {
   color: var(--ink);
   text-decoration: none;
-}
-.list {
-  display: grid;
-  gap: 14px;
-}
-.postwrap {
-  display: grid;
-  cursor: pointer;
-  border-radius: var(--radius);
-}
-.postwrap:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
 }
 .hint {
   color: var(--ink-3);
