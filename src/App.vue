@@ -1,13 +1,18 @@
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { RouterView, useRoute } from "vue-router";
 import { House, Plus, Settings } from "@lucide/vue";
+import { useUserStore } from "@/stores/user.js";
 
 const route = useRoute();
+const user = useUserStore();
 const tab = computed(() => route.query.tab || "all");
 const isHome = computed(
   () => route.name === "home" && (tab.value === "all" || !route.query.tab),
 );
+
+// If a NIP-07 signer is present, log in silently — no login banners needed.
+onMounted(() => user.autoLogin());
 </script>
 
 <template>

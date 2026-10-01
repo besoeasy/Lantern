@@ -69,7 +69,7 @@ function openPost(e, id) {
 
 <template>
   <div class="home">
-    <div class="login" v-if="!user.pubkey">
+    <div class="login" v-if="!user.pubkey && !user.probing && !user.signerFound">
       <div class="login-txt">
         <strong>Join the discussion</strong>
         <span>Connect a NIP-07 extension to comment.</span>

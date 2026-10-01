@@ -24,7 +24,7 @@ function onPublished() {
 
 <template>
   <div class="compose">
-    <div class="login" v-if="!user.pubkey">
+    <div class="login" v-if="!user.pubkey && !user.probing">
       <div class="login-txt">
         <strong>Login to post</strong>
         <span>Connect a NIP-07 extension to publish.</span>
