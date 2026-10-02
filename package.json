@@ -12,7 +12,8 @@
     "test:relay": "node tests/relay.test.mjs",
     "test:e2e": "node tests/post-round-trip.test.mjs",
     "test:blog": "node tests/blog-editor.test.mjs",
-    "test:md": "node tests/markdown-security.test.mjs"
+    "test:md": "node tests/markdown-security.test.mjs",
+    "shots": "node tests/screenshots.mjs"
   },
   "dependencies": {
     "@helia/verified-fetch": "^8.1.2",

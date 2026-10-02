@@ -48,7 +48,12 @@ function sanitizer() {
 
 marked.setOptions({
   gfm: true,
-  breaks: true, // a single newline is a line break, which is what phones expect
+  // breaks stays off, which is CommonMark: a single newline is a soft wrap and
+  // only a blank line starts a new paragraph. Turning it on looks fine for the
+  // one-line posts a phone app invites, but an article is typed in a wrapped
+  // editor, where every 80-column wrap would become a visible line break
+  // mid-sentence. A line break still needs two trailing spaces or a backslash.
+  breaks: false,
 });
 
 /** Renders untrusted Markdown to sanitized HTML. Always safe for v-html. */
@@ -91,4 +96,32 @@ export function readingMinutes(md) {
 export function firstHeading(md) {
   const m = String(md ?? "").match(/^#{1,6}\s+(.+)$/m);
   return m ? m[1].trim() : "";
+}
+
+/** Loose comparison so "Why PoW?" and "why pow" count as the same heading. */
+function sameHeading(a, b) {
+  const norm = (s) =>
+    String(s)
+      .toLowerCase()
+      .replace(/[^\w\s]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  return norm(a) === norm(b) && norm(a) !== "";
+}
+
+/**
+ * Drops a leading `# heading` when it just repeats the title.
+ *
+ * Almost every article opens with its own title as an H1, but the title is
+ * already rendered from the `title` tag above the body — so without this the
+ * reader sees the same line twice, in two different typefaces. Applied on the
+ * reading side only: the editor preview stays faithful to what was typed.
+ */
+export function withoutTitleHeading(md, title) {
+  const source = String(md ?? "");
+  if (!title) return source;
+  // Only ever the first block, so a later H1 is untouched.
+  const m = source.match(/^(\s*)#{1,6}\s+(.+?)\s*(?:\n+|$)/);
+  if (!m || !sameHeading(m[2], title)) return source;
+  return source.slice(m[0].length);
 }

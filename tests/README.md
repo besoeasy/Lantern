@@ -11,6 +11,7 @@ npm run test:e2e      # browser post round-trip only
 npm run test:blog     # blog editor + reading view
 npm run test:md       # Markdown sanitiser, no browser
 npm run test:relay    # local relay + nostr-tools, no browser
+npm run shots         # render every screen to ./screenshots (asserts nothing)
 ```
 
 Run one test by name fragment:
@@ -69,7 +70,10 @@ renders, so the allow-list cannot be tightened into uselessness.
 | separate screen | The composer has no blog tab; a link leads to `/#/write` |
 | live preview | Headings, bold, lists and links render as you type |
 | preview is inert | Hostile Markdown in the editor does not execute |
+| default view | A phone opens in Write, a desktop opens in Split; Split is offered only when it fits |
 | view modes | Write / Split / Preview all switch the panes |
+| wrapped prose | A soft newline does not become a line break; two trailing spaces still do |
+| duplicate title | A leading H1 repeating the title is dropped, not shown twice |
 | slug behaviour | Follows the title until the author edits it, then stops |
 | publishes | Kind 30023 with `d`, `title`, `summary`, `published_at`, hashtags |
 | reading view | Full Markdown rendered, not the clamped card; reading time shown |
@@ -81,6 +85,17 @@ renders, so the allow-list cannot be tightened into uselessness.
 
 Chromium comes from the system Chrome (`/usr/bin/google-chrome`), because the
 Playwright browser download is not present. Override with `CHROME_PATH`.
+
+## Looking at the UI
+
+`npm run shots` starts the same harness, seeds one post of each kind, and writes
+a PNG of every screen in both colour schemes to `./screenshots`. It asserts
+nothing — it exists because the `:deep()` bug below was invisible in the CSS and
+in every test, and obvious the moment the page was rendered.
+
+`v-html` content never carries a scoped-style attribute, so a plain `.md h1`
+rule in a `<style scoped>` block compiles to `.md h1[data-v-xxx]` and silently
+matches nothing. If you add styles for rendered Markdown, use `:deep()`.
 
 ## Adding tests
 

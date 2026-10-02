@@ -3,7 +3,14 @@
 // Same approach as the post round-trip: a local relay, a real browser, real
 // signing. Publishing an article does not touch Originless unless a cover is
 // attached, so no upload server is needed here.
-import { finalizeEvent, getEventHash, SimplePool, utils, verifyEvent } from "nostr-tools";
+import {
+  finalizeEvent,
+  getEventHash,
+  nip19,
+  SimplePool,
+  utils,
+  verifyEvent,
+} from "nostr-tools";
 import { launchBrowser, openApp, relay, startDevServer, suite, waitFor } from "./harness.mjs";
 import { slugify } from "../src/lib/slug.js";
 
@@ -168,8 +175,44 @@ await test("the preview does not execute injected script", async () => {
   }
 });
 
+await test("the default view follows the viewport width", async () => {
+  // Narrow: two panes are unusable on a phone, and the Split button is hidden,
+  // so the editor must not start in a mode the author cannot name.
+  {
+    const { context, page } = await openApp(browser, { relays: [relayA.url], width: 430 });
+    try {
+      await page.goto(`${APP_URL}/#/write`);
+      await createAccount(page);
+      await page.locator(".mded textarea").waitFor({ timeout: 15000 });
+      const editor = page.locator(".mded textarea");
+      const view = page.locator(".mded .pane.view");
+      ok(await editor.isVisible(), "a phone opens with the editor");
+      eq(await view.isVisible(), false, "and no side-by-side preview");
+      eq(await page.getByRole("tab", { name: "Split" }).count(), 0, "Split is not offered at all");
+    } finally {
+      await context.close();
+    }
+  }
+  // Wide: both panes side by side from the start.
+  {
+    const { context, page } = await openApp(browser, { relays: [relayA.url], width: 1100 });
+    try {
+      await page.goto(`${APP_URL}/#/write`);
+      await createAccount(page);
+      await page.locator(".mded textarea").waitFor({ timeout: 15000 });
+      const editor = page.locator(".mded textarea");
+      const view = page.locator(".mded .pane.view");
+      ok(await editor.isVisible(), "a desktop opens with the editor");
+      ok(await view.isVisible(), "and the preview beside it");
+      eq(await page.getByRole("tab", { name: "Split" }).count(), 1, "Split is offered");
+    } finally {
+      await context.close();
+    }
+  }
+});
+
 await test("write, split and preview modes all switch", async () => {
-  const { context, page } = await openApp(browser, { relays: [relayA.url] });
+  const { context, page } = await openApp(browser, { relays: [relayA.url], width: 1100 });
   try {
     await page.goto(`${APP_URL}/#/write`);
     await createAccount(page);
@@ -189,6 +232,9 @@ await test("write, split and preview modes all switch", async () => {
     await page.getByRole("tab", { name: "Preview" }).click();
     eq(await editor.isVisible(), false, "Preview hides the editor");
     ok(await view.isVisible(), "Preview shows the rendered output");
+
+    await page.getByRole("tab", { name: "Split" }).click();
+    ok(await editor.isVisible() && (await view.isVisible()), "Split brings both back");
   } finally {
     await context.close();
   }
@@ -254,6 +300,88 @@ await test("an article publishes as kind 30023 with the expected tags", async ()
     // Publishing navigates to the post page.
     await page.waitForURL(/post\//, { timeout: 20000 });
     ok(true, "the app moved to the published article");
+  } finally {
+    await context.close();
+  }
+});
+
+// --- reading view --------------------------------------------------------
+
+await test("a title repeated as an H1 is not shown twice", async () => {
+  const { context, page } = await openApp(browser, { relays: [relayA.url] });
+  try {
+    await page.goto(APP_URL);
+    const nsec = await createAccount(page);
+    const pubkey = await storedPubkey(page);
+
+    // The shape almost every author writes: title tag plus a matching H1.
+    const title = `Duplicate ${Math.random().toString(36).slice(2, 7)}`;
+    const ev = finalizeEvent(
+      minePow({
+        kind: 30023,
+        created_at: Math.floor(Date.now() / 1000),
+        content: `# ${title}\n\nThe body starts here.\n\n## A section\n\nMore.`,
+        tags: [
+          ["d", "dup"],
+          ["title", title],
+          ["client", "lantern"],
+          ["expiration", "9999999999"],
+        ],
+        pubkey,
+      }),
+      utils.hexToBytes(utils.bytesToHex(nip19.decode(nsec).data)),
+    );
+    await publishDirect(ev);
+
+    const reader = await openApp(browser, { relays: [relayA.url], nsec });
+    await reader.page.goto(`${APP_URL}/#/post/${ev.id}`);
+    await reader.page.locator(".reader").waitFor({ timeout: 30000 });
+
+    // The title renders once, from the title tag.
+    eq(await reader.page.locator(".reader > header h1").textContent(), title, "title shown once");
+    eq(
+      await reader.page.locator(".reader .body h1").count(),
+      0,
+      "the duplicate H1 is dropped from the body",
+    );
+    eq(await reader.page.locator(".reader .body h2").count(), 1, "other headings survive");
+    ok(
+      (await reader.page.locator(".reader .body").textContent()).includes("The body starts here."),
+      "the body is intact",
+    );
+    await reader.context.close();
+  } finally {
+    await context.close();
+  }
+});
+
+await test("wrapped prose does not break mid-sentence", async () => {
+  // CommonMark: a single newline is a soft wrap, not a <br>. Articles are typed
+  // in a wrapped editor, so breaks:true would break every 80-column line.
+  // Rendered in the browser, since renderMarkdown needs a DOM for DOMPurify.
+  const { context, page } = await openApp(browser, { relays: [relayA.url], width: 1100 });
+  try {
+    await page.goto(`${APP_URL}/#/write`);
+    await createAccount(page);
+    await page.locator(".mded textarea").waitFor({ timeout: 15000 });
+
+    const wrapped =
+      "One sentence that was typed\nacross three wrapped lines\nin the editor.\n\nSecond paragraph.";
+    await page.locator(".mded textarea").fill(wrapped);
+    const view = page.locator(".mded .pane.view");
+    await waitFor("the paragraphs to render", () => view.locator("p").count().then((n) => n === 2));
+
+    eq(await view.locator("br").count(), 0, "no hard break inside a paragraph");
+    eq(
+      (await view.locator("p").first().textContent()).replace(/\s+/g, " ").trim(),
+      "One sentence that was typed across three wrapped lines in the editor.",
+      "the soft wrap collapses into one flowing paragraph",
+    );
+
+    // A deliberate hard break still works: two trailing spaces.
+    await page.locator(".mded textarea").fill("line one  \nline two");
+    await waitFor("the hard break to render", () => view.locator("br").count().then((n) => n === 1));
+    ok(true, "two trailing spaces still force a line break");
   } finally {
     await context.close();
   }

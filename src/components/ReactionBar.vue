@@ -83,6 +83,17 @@ async function react(emoji) {
   flex-wrap: wrap;
   padding: 8px 4px 0;
 }
+/* PostList passes a `reacts` class to sit this bar flush against the bottom of
+   a card, but a scoped rule in the parent cannot reach into this component's
+   internals -- only its root. So the box model lives here. */
+.reacts {
+  margin-top: -1px;
+  padding: 3px 10px 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+}
 .r {
   display: inline-flex;
   align-items: center;

@@ -60,4 +60,9 @@ function openPost(e, id) {
 .postwrap:active {
   transform: scale(0.985);
 }
+/* The reaction bar sits under the card rather than inside it, so it carries the
+   card's own bottom edge: same surface, side and bottom borders, bottom corners
+   only. Without this it reads as pills floating in the gap between posts.
+   The parent class lands on ReactionBar's root, but the box model belongs with
+   the bar itself -- a scoped rule here cannot reach into that child. */
 </style>

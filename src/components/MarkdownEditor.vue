@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, ref, watch } from "vue";
 import { Columns2, Eye, PencilLine } from "@lucide/vue";
-import { renderMarkdown, readingMinutes } from "@/lib/markdown.js";
+import { readingMinutes } from "@/lib/markdown.js";
 import Markdown from "./Markdown.vue";
 
 // Markdown editor with a live preview.
@@ -22,6 +22,9 @@ const props = defineProps({
 const emit = defineEmits(["update:modelValue"]);
 
 const editor = ref(null);
+// Default follows the viewport: two panes on a phone leave neither usable, and
+// the Split button is hidden there, so starting in Split would be a mode the
+// author cannot see the name of.
 const mode = ref("split");
 const wide = ref(true);
 
@@ -31,17 +34,22 @@ const VIEWS = [
   { id: "preview", label: "Preview", icon: Eye },
 ];
 
-const html = computed(() => renderMarkdown(props.modelValue));
-const stats = computed(() => ({
-  words: props.modelValue.trim() ? props.modelValue.trim().split(/\s+/).length : 0,
-  minutes: readingMinutes(props.modelValue),
-}));
+// The preview goes through the Markdown component rather than a second render
+// here, so it cannot drift from what a reader gets.
+const stats = computed(() => {
+  const text = props.modelValue.trim();
+  if (!text) return { words: 0, minutes: 0 };
+  return { words: text.split(/\s+/).length, minutes: readingMinutes(text) };
+});
 const isEmpty = computed(() => !props.modelValue.trim());
 
-// Track the width so Split can be dropped from the toolbar on a phone, where
-// two panes are worse than none.
+// Track the width so Split can be dropped from the toolbar on a phone, and so
+// the initial mode suits the screen.
 const mq = window.matchMedia("(min-width: 720px)");
-const syncWidth = () => (wide.value = mq.matches);
+function syncWidth() {
+  wide.value = mq.matches;
+  mode.value = wide.value ? "split" : "write";
+}
 syncWidth();
 mq.addEventListener("change", syncWidth);
 
@@ -125,7 +133,10 @@ function applyAction({ wrap, suffix = "", prefix }) {
           <component :is="v.icon" /><span>{{ v.label }}</span>
         </button>
       </div>
-      <span class="stats">{{ stats.words }} words · {{ stats.minutes }} min</span>
+      <span v-if="stats.words" class="stats">
+        {{ stats.words }} words · {{ stats.minutes }} min
+      </span>
+      <span v-else class="stats muted">Markdown supported</span>
     </div>
 
     <div class="panes">
@@ -215,6 +226,9 @@ function applyAction({ wrap, suffix = "", prefix }) {
   color: var(--ink-3);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+.stats.muted {
+  opacity: 0.75;
 }
 .panes {
   display: grid;

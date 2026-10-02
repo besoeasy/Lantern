@@ -2,7 +2,7 @@
 import { computed, ref, watch } from "vue";
 import { CalendarDays, Clock } from "@lucide/vue";
 import { tagVal } from "@/lib/nostr.js";
-import { readingMinutes } from "@/lib/markdown.js";
+import { readingMinutes, withoutTitleHeading } from "@/lib/markdown.js";
 import { resolveMediaUrl } from "@/lib/ipfs.js";
 import { relTime } from "@/lib/format.js";
 import AuthorLink from "./AuthorLink.vue";
@@ -37,6 +37,9 @@ watch(
 const title = computed(() => tagVal(props.ev, "title") || "Untitled");
 const minutes = computed(() => readingMinutes(props.ev?.content));
 const published = computed(() => tagVal(props.ev, "published_at"));
+// An article that repeats its own title as a leading H1 would otherwise show
+// that title twice, in two typefaces.
+const body = computed(() => withoutTitleHeading(props.ev?.content, title.value));
 </script>
 
 <template>
@@ -64,7 +67,7 @@ const published = computed(() => tagVal(props.ev, "published_at"));
     <img v-if="cover" class="cover" :src="cover" alt="" loading="lazy" />
     <p v-else-if="coverFailed" class="nocover">Cover image could not be fetched from IPFS.</p>
 
-    <Markdown class="body" :source="ev.content" />
+    <Markdown class="body" :source="body" />
   </article>
 </template>
 
@@ -119,6 +122,17 @@ h1 {
 }
 .dot {
   color: var(--ink-3);
+}
+/* AuthorLink is a child component, so the parent's scoped .pk rule still lands
+   on its root element. Without this the link falls back to the UA's blue. */
+.pk {
+  color: var(--ink-2);
+  font-weight: 600;
+  text-decoration: none;
+}
+.pk:hover {
+  color: var(--ink);
+  text-decoration: underline;
 }
 .cover {
   display: block;

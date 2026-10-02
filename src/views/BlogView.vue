@@ -50,8 +50,6 @@ function parseTags() {
   return out.slice(0, 10);
 }
 
-const wordCount = computed(() => (body.value.trim() ? body.value.trim().split(/\s+/).length : 0));
-
 const canPublish = computed(
   () => !!title.value.trim() && !!body.value.trim() && !!slug.value,
 );
@@ -140,7 +138,7 @@ function reset() {
         <MarkdownEditor
           v-model="body"
           class="editor"
-          placeholder="Write in Markdown…&#10;&#10;## A heading&#10;&#10;Some **bold** text."
+          placeholder="Write in Markdown… try ## A heading, **bold**, or - a list"
           :min-rows="14"
         />
 
@@ -153,7 +151,6 @@ function reset() {
         </div>
 
         <div class="foot">
-          <span class="count">{{ wordCount }} words</span>
           <div class="acts">
             <button class="ghost" :disabled="busy" @click="reset">Clear</button>
             <button class="post" :disabled="busy || !canPublish" @click="submit">
@@ -207,6 +204,12 @@ function reset() {
   font-weight: 700;
   letter-spacing: -0.02em;
 }
+/* Muted, so an empty title reads as a placeholder rather than as a heading
+   the author already wrote. */
+.title::placeholder {
+  color: var(--ink-3);
+  font-weight: 600;
+}
 .title:focus {
   border-color: transparent;
   box-shadow: none;
@@ -252,14 +255,9 @@ function reset() {
 .foot {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 10px;
   flex-wrap: wrap;
-}
-.count {
-  font-size: 12px;
-  color: var(--ink-3);
-  font-variant-numeric: tabular-nums;
 }
 .acts {
   display: flex;
