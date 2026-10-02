@@ -1,19 +1,11 @@
 import * as settings from "./settings.js";
 
 export const DEFAULT_RELAYS = [
-  "wss://nos.lol",
-  "wss://relay.primal.net",
-  "wss://relay.snort.social",
-  "wss://purplerelay.com",
-  "wss://nostr.mom",
-  "wss://nostr.oxtr.dev",
-  "wss://relay.emre.xyz",
-  "wss://bucket.coracle.social",
   "wss://nostr-02.yakihonne.com",
-  "wss://articles.layer3.news",
-  "wss://nostr.21crypto.ch",
-  "wss://cfrelay.haorendashu.workers.dev",
-  "wss://relay.cocu.la",
+  "wss://purplerelay.com",
+  "wss://relay.snort.social",
+  "wss://relay.primal.net",
+  "wss://nos.lol",
 ];
 
 export const CLIENT_TAG = "lantern";
