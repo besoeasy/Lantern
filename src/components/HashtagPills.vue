@@ -34,10 +34,12 @@ const tags = computed(() => displayHashtags(props.ev));
 .pill {
   font-weight: 600;
   text-decoration: none;
-  border-radius: 99px;
+  border-radius: var(--r-full);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
 }
 .more {
   font-weight: 600;
@@ -51,36 +53,40 @@ const tags = computed(() => displayHashtags(props.ev));
   font-size: 12px;
   color: var(--ink-2);
   border: 1px solid var(--line);
-  background: var(--card);
+  background: var(--surface);
   padding: 4px 12px;
   max-width: 160px;
 }
 .light .pill:hover {
   color: var(--ink);
-  border-color: rgba(0, 0, 0, 0.28);
+  border-color: var(--line-strong);
+  background: var(--surface-sunken);
 }
 .light .more {
   font-size: 12px;
   color: var(--ink-3);
 }
 
-/* Dark variant: sits inside the music/video card backgrounds. */
+/* Dark variant: sits inside the music/video card backgrounds, which stay dark
+   in both colour schemes — so these read the --media-* ink pairs, and the
+   white overlay tints rather than a themed surface. */
 .row.dark {
   margin-top: 4px;
 }
 .dark .pill {
   font-size: 11.5px;
-  color: #d4d4d8;
+  color: var(--media-ink-2);
   background: rgba(250, 250, 250, 0.08);
   padding: 3px 10px;
   max-width: 140px;
 }
 .dark .pill:hover {
+  color: var(--media-ink);
   background: rgba(250, 250, 250, 0.16);
 }
 .dark .more {
   font-size: 11.5px;
-  color: #71717a;
+  color: var(--media-ink-3);
   align-self: center;
 }
 </style>

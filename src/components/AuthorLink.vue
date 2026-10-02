@@ -1,5 +1,5 @@
 <script setup>
-import { shortPk } from "@/lib/nostr.js";
+import { shortPk } from "@/lib/identity.js";
 
 // Every card and comment footers the same short-pubkey link to the author's
 // profile. Styling differs per surface, but because this is a child component

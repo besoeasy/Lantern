@@ -7,12 +7,19 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "format": "oxfmt src/"
+    "format": "oxfmt src/",
+    "test": "node tests/run.mjs",
+    "test:relay": "node tests/relay.test.mjs",
+    "test:e2e": "node tests/post-round-trip.test.mjs",
+    "test:blog": "node tests/blog-editor.test.mjs",
+    "test:md": "node tests/markdown-security.test.mjs"
   },
   "dependencies": {
     "@helia/verified-fetch": "^8.1.2",
     "@lucide/vue": "^1.49.0",
     "dexie": "^4.4.6",
+    "dompurify": "^3.4.16",
+    "marked": "^18.0.14",
     "nostr-tools": "^2.25.2",
     "pinia": "^4.0.3",
     "vue": "^3.5.42",
@@ -20,7 +27,9 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.8",
+    "jsdom": "^30.1.1",
     "oxfmt": "^0.67.0",
+    "playwright": "^1.63.0",
     "vite": "^8.2.2",
     "vite-plugin-vue-devtools": "^8.2.1"
   },

@@ -1,7 +1,8 @@
 <script setup>
-import { computed, onUnmounted, ref, watch } from "vue";
+import { computed, onUnmounted, watch } from "vue";
 import { subscribeReactions, postReaction, expiryOf } from "@/lib/nostr.js";
 import { useEventList } from "@/composables/useEventList.js";
+import { useAsyncAction } from "@/composables/useAsyncAction.js";
 import { useUserStore } from "@/stores/user.js";
 
 const props = defineProps({ ev: Object });
@@ -17,8 +18,11 @@ function isFresh(ev) {
 
 // Arrival order: only the per-emoji counts are shown, so no sort is needed.
 const { items: all, add, reset } = useEventList({ order: null, guard: isFresh });
-const busy = ref("");
-const msg = ref("");
+// busyKey holds the emoji in flight; busy covers the whole bar. The sign-in
+// gate lives in the composable, so signing out needs no check here.
+const { busyKey, msg, isBusy, run, clear } = useAsyncAction({
+  pubkey: () => user.pubkey,
+});
 let sub = null;
 
 watch(
@@ -27,7 +31,7 @@ watch(
     sub?.close?.();
     sub = null;
     reset();
-    msg.value = "";
+    clear();
     if (!id) return;
     sub = subscribeReactions(props.ev, add);
   },
@@ -47,20 +51,8 @@ const mine = computed(
 );
 
 async function react(emoji) {
-  msg.value = "";
-  if (!user.pubkey) {
-    msg.value = "Login to react.";
-    return;
-  }
   if (mine.value.has(emoji)) return;
-  busy.value = emoji;
-  try {
-    await postReaction(props.ev, emoji, user.pubkey);
-  } catch (e) {
-    msg.value = "Failed: " + e.message;
-  } finally {
-    busy.value = "";
-  }
+  await run(() => postReaction(props.ev, emoji, user.pubkey), emoji);
 }
 </script>
 
@@ -71,14 +63,14 @@ async function react(emoji) {
       :key="e"
       class="r"
       :class="{ on: mine.has(e) }"
-      :disabled="!!busy"
+      :disabled="isBusy()"
       :title="`React ${e}`"
       @click.stop="react(e)"
     >
       <span>{{ e }}</span>
       <span v-if="counts[e]" class="n">{{ counts[e] }}</span>
     </button>
-    <span v-if="busy" class="hint">…</span>
+    <span v-if="busyKey" class="hint">…</span>
     <span v-if="msg" class="msg">{{ msg }}</span>
   </div>
 </template>
@@ -98,20 +90,29 @@ async function react(emoji) {
   font-size: 14px;
   line-height: 1;
   border: 1px solid var(--line);
-  background: var(--card);
-  padding: 5px 11px;
-  border-radius: 99px;
+  background: var(--surface);
+  padding: 6px 12px;
+  border-radius: var(--r-full);
   cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
 }
 .r:hover:not(:disabled) {
-  border-color: rgba(0, 0, 0, 0.28);
+  border-color: var(--line-strong);
+  background: var(--surface-sunken);
+}
+.r:not(:disabled):active {
+  transform: scale(0.93);
 }
 .r:disabled {
-  opacity: 0.6;
-  cursor: default;
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 .r.on {
   border-color: var(--ink);
+  background: var(--ink);
+}
+.r.on:hover {
   background: var(--ink);
 }
 .n {
@@ -120,11 +121,17 @@ async function react(emoji) {
   color: var(--ink-2);
 }
 .r.on .n {
-  color: #fff;
+  color: var(--ink-on-accent);
 }
-.hint,
-.msg {
+/* Every message this bar can show comes from useAsyncAction: either a publish
+   failure or the sign-in refusal, so all of them are error-toned. */
+.hint {
   font-size: 12px;
   color: var(--ink-3);
+}
+.msg {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--danger);
 }
 </style>

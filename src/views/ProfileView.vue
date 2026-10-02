@@ -2,12 +2,9 @@
 import { onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { BadgeCheck, BadgeX, Copy, Globe, Zap } from "@lucide/vue";
-import { nip19 } from "nostr-tools";
-import {
-  getAuthorProfile,
-  subscribeAuthorPosts,
-  shortPk,
-} from "@/lib/nostr.js";
+import { getAuthorProfile, subscribeAuthorPosts } from "@/lib/nostr.js";
+import { npubOf, resolvePk, shortNpub, shortPk } from "@/lib/identity.js";
+import { verifyNip05 } from "@/lib/nip05.js";
 import { FEED_KINDS, ensureRelays } from "@/lib/relays.js";
 import { getCachedAuthorPosts } from "@/lib/db.js";
 import { resolveMediaUrl } from "@/lib/ipfs.js";
@@ -33,41 +30,10 @@ const { copied: copiedNpub, copy: copyText } = useCopy();
 const { items: events, add, reset: resetEvents } = useEventList();
 let sub = null;
 
-// hex, npub or nprofile; empty when viewing self while logged out
-function resolvePk(input) {
+// Empty route id means "my own profile", which needs a session to resolve.
+function pkFromRoute(input) {
   if (!input) return user.pubkey || "";
-  if (/^[0-9a-f]{64}$/i.test(input)) return input.toLowerCase();
-  try {
-    const d = nip19.decode(input.trim());
-    if (d.type === "npub") return d.data;
-    if (d.type === "nprofile") return d.data.pubkey;
-  } catch {}
-  return "";
-}
-
-async function verifyNip05(nip05, pubkey) {
-  const [name, domain] = (nip05 || "").split("@");
-  if (!name || !domain) return false;
-  const res = await fetch(
-    `https://${domain}/.well-known/nostr.json?name=${encodeURIComponent(name)}`,
-    { signal: AbortSignal.timeout(8000) },
-  );
-  if (!res.ok) return false;
-  const data = await res.json();
-  return data?.names?.[name] === pubkey;
-}
-
-function npubOf(hex) {
-  try {
-    return nip19.npubEncode(hex);
-  } catch {
-    return "";
-  }
-}
-
-function shortNpub(hex) {
-  const n = npubOf(hex);
-  return n ? `${n.slice(0, 10)}…${n.slice(-6)}` : shortPk(hex);
+  return resolvePk(input);
 }
 
 function copyNpub() {
@@ -88,7 +54,7 @@ watch(
     nip05State.value = "";
     avatarUrl.value = "";
     bannerUrl.value = "";
-    pk.value = resolvePk(id);
+    pk.value = pkFromRoute(id);
     if (!pk.value) {
       loadingProfile.value = false;
       loadingPosts.value = false;
@@ -126,11 +92,12 @@ onUnmounted(() => sub?.close?.());
   <div class="profile">
     <BackBar title="Profile" />
 
+    <!-- No v-if="!pk" here: signing in from this screen sets pk, which would
+         unmount the prompt mid-flow and take a new key's only backup copy with it. -->
     <LoginPrompt
-      v-if="!pk"
       ignore-signer
-      title="Login to see your profile"
-      subtitle="Connect a NIP-07 extension, or open someone's profile via link."
+      title="Sign in to see your profile"
+      subtitle="Use an extension or a key, or open someone's profile via link."
     />
 
     <template v-if="pk">
@@ -203,9 +170,9 @@ onUnmounted(() => sub?.close?.());
   gap: 12px;
 }
 .card {
-  background: var(--card);
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -218,7 +185,7 @@ onUnmounted(() => sub?.close?.());
 }
 .banner-fallback {
   height: 120px;
-  background: linear-gradient(120deg, #0a0a0a 0%, #3f3f46 55%, #71717a 100%);
+  background: linear-gradient(120deg, var(--ink) 0%, var(--ink-3) 55%, var(--ink-2) 100%);
 }
 .skeleton .banner.sk {
   height: 120px;
@@ -227,14 +194,14 @@ onUnmounted(() => sub?.close?.());
   display: block;
   height: 16px;
   width: 140px;
-  border-radius: 6px;
+  border-radius: var(--r-xs);
 }
 .skline.short {
   height: 12px;
   width: 90px;
 }
 .skeleton .avatar.sk {
-  border-color: var(--card);
+  border-color: var(--surface);
 }
 .who {
   display: flex;
@@ -248,14 +215,14 @@ onUnmounted(() => sub?.close?.());
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  background: var(--ink);
-  color: #fff;
+  background: linear-gradient(135deg, var(--ink), var(--ink-3));
+  color: var(--ink-on-accent);
   display: grid;
   place-items: center;
   font-size: 22px;
   font-weight: 800;
   margin-top: -30px;
-  border: 3px solid var(--card);
+  border: 3px solid var(--surface);
 }
 .avatar img {
   width: 100%;
@@ -286,17 +253,19 @@ onUnmounted(() => sub?.close?.());
   gap: 6px;
   font-size: 11.5px;
   font-weight: 600;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-mono);
   color: var(--ink-2);
   border: 1px solid var(--line);
-  background: transparent;
+  background: var(--surface-2);
   padding: 6px 12px;
-  border-radius: 99px;
+  border-radius: var(--r-full);
   cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
 .npub:hover {
   color: var(--ink);
-  border-color: rgba(0, 0, 0, 0.28);
+  border-color: var(--line-strong);
+  background: var(--surface-sunken);
 }
 .npub svg {
   width: 13px;
@@ -304,13 +273,14 @@ onUnmounted(() => sub?.close?.());
   stroke-width: 1.9;
 }
 .empty {
-  margin: 10px 16px 0;
+  margin: 12px 16px 0;
   font-size: 12.5px;
+  line-height: 1.6;
   color: var(--ink-3);
-  background: var(--bg);
+  background: var(--surface-2);
   border: 1px dashed var(--line);
-  border-radius: 12px;
-  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  padding: 11px 13px;
 }
 .stats {
   display: flex;
@@ -350,18 +320,16 @@ onUnmounted(() => sub?.close?.());
   stroke-width: 1.9;
 }
 .m .ok {
-  color: #15803d;
+  color: var(--success);
 }
 .m .bad {
-  color: #dc2626;
+  color: var(--danger);
 }
 .m.link {
   color: var(--ink);
   text-decoration: none;
 }
-.hint {
-  color: var(--ink-3);
-  font-size: 13px;
-  text-align: center;
+.m.link:hover {
+  text-decoration: underline;
 }
 </style>

@@ -7,13 +7,13 @@ import {
   Images,
   Clapperboard,
   Video,
-  FileText,
   Music,
   Type,
   X,
 } from "@lucide/vue";
 import { signEvent, publishEvent, formatDuration } from "@/lib/nostr.js";
 import { uploadFile, sha256Hex } from "@/lib/ipfs.js";
+import { useAsyncAction } from "@/composables/useAsyncAction.js";
 import { useUserStore } from "@/stores/user.js";
 
 const emit = defineEmits(["published"]);
@@ -67,15 +67,6 @@ const TABS = {
     title: true,
     placeholder: "What is happening?",
   },
-  blog: {
-    label: "Blog",
-    icon: FileText,
-    kind: 30023,
-    media: false,
-    accept: "",
-    title: true,
-    placeholder: "Write in Markdown…",
-  },
   music: {
     label: "Music",
     icon: Music,
@@ -87,15 +78,16 @@ const TABS = {
   },
 };
 
-const TAB_KEYS = ["note", "photo", "gallery", "reel", "video", "blog", "music"];
+// Long-form writing lives on its own screen (views/BlogView.vue): it needs a
+// Markdown editor with a live preview, which does not fit a single-line tab.
+const TAB_KEYS = ["note", "photo", "gallery", "reel", "video", "music"];
 
 const user = useUserStore();
 const tab = ref("note");
 const text = ref("");
 const title = ref("");
 const files = ref([]);
-const busy = ref(false);
-const msg = ref("");
+const { busy, msg, run, say } = useAsyncAction({ pubkey: () => user.pubkey });
 const ok = ref(false);
 const tagChips = ref([]);
 const tagDraft = ref("");
@@ -184,10 +176,6 @@ function unixNow() {
   return String(Math.floor(Date.now() / 1000));
 }
 
-function slugify(s) {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 64);
-}
-
 // How each tab turns the form into tags. The kind itself comes from TABS.
 const BUILD = {
   async note() {
@@ -211,13 +199,6 @@ const BUILD = {
       ["title", title.value || "Video"],
       ["published_at", unixNow()],
       ...(await imetaTags(files.value)),
-    ];
-  },
-  async blog() {
-    return [
-      ["d", slugify(title.value) || `post-${Date.now()}`],
-      ["title", title.value || "Untitled"],
-      ["published_at", unixNow()],
     ];
   },
   // Amethyst-compatible music track (kind 36787): title/artist/album/art.
@@ -253,45 +234,37 @@ const BUILD = {
 };
 
 async function submit() {
-  msg.value = "";
   ok.value = false;
-  if (!user.pubkey) {
-    msg.value = "Login first.";
-    return;
-  }
-  busy.value = true;
-  try {
+  const signed = await run(async () => {
     const tags = await BUILD[tab.value]();
-
     confirmDraft();
-    const signed = await signEvent({
+    const ev = await signEvent({
       kind: spec.value.kind,
       created_at: Math.floor(Date.now() / 1000),
       content: text.value,
       tags: [...tags, ...tagChips.value.map((v) => ["t", v])],
       pubkey: user.pubkey,
     });
-    await publishEvent(signed);
-    msg.value = `Published · kind ${spec.value.kind}`;
-    ok.value = true;
-    text.value = "";
-    title.value = "";
-    files.value = [];
-    tagChips.value = [];
-    tagDraft.value = "";
-    musicTitle.value = "";
-    musicArtist.value = "";
-    musicAlbum.value = "";
-    musicTrackNo.value = "";
-    musicReleased.value = "";
-    coverFile.value = null;
-    audioDuration.value = 0;
-    emit("published", signed);
-  } catch (e) {
-    msg.value = e.message;
-  } finally {
-    busy.value = false;
-  }
+    await publishEvent(ev);
+    return ev;
+  });
+  if (signed === undefined) return;
+
+  say(`Published · kind ${spec.value.kind}`);
+  ok.value = true;
+  text.value = "";
+  title.value = "";
+  files.value = [];
+  tagChips.value = [];
+  tagDraft.value = "";
+  musicTitle.value = "";
+  musicArtist.value = "";
+  musicAlbum.value = "";
+  musicTrackNo.value = "";
+  musicReleased.value = "";
+  coverFile.value = null;
+  audioDuration.value = 0;
+  emit("published", signed);
 }
 </script>
 
@@ -308,14 +281,14 @@ async function submit() {
         {{ TABS[k].label }}
       </button>
     </div>
-    <input v-if="spec.title" v-model="title" placeholder="Title" class="in" />
+    <input v-if="spec.title" v-model="title" placeholder="Title" class="field in" />
     <template v-if="tab === 'music'">
-      <input v-model="musicTitle" placeholder="Track title *" class="in" />
-      <input v-model="musicArtist" placeholder="Artist *" class="in" />
-      <input v-model="musicAlbum" placeholder="Album" class="in" />
+      <input v-model="musicTitle" placeholder="Track title *" class="field in" />
+      <input v-model="musicArtist" placeholder="Artist *" class="field in" />
+      <input v-model="musicAlbum" placeholder="Album" class="field in" />
       <div class="mrow">
-        <input v-model="musicTrackNo" placeholder="# · track" inputmode="numeric" class="in" />
-        <input v-model="musicReleased" placeholder="Released · e.g. 2024" class="in grow" />
+        <input v-model="musicTrackNo" placeholder="# · track" inputmode="numeric" class="field in" />
+        <input v-model="musicReleased" placeholder="Released · e.g. 2024" class="field in grow" />
       </div>
       <label class="coverpick">
         <Image />
@@ -324,7 +297,7 @@ async function submit() {
       </label>
       <p v-if="audioDuration > 0" class="dur">Duration {{ formatDuration(audioDuration) }} detected</p>
     </template>
-    <textarea v-model="text" :placeholder="spec.placeholder" rows="3" class="in area" />
+    <textarea v-model="text" :placeholder="spec.placeholder" rows="3" class="field in area" />
     <div class="hashwrap" @click="hashInput?.focus()">
       <span v-for="(c, i) in tagChips" :key="c" class="chip">
         #{{ c }}
@@ -369,9 +342,9 @@ async function submit() {
 
 <style scoped>
 .composer {
-  background: var(--card);
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 22px;
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   padding: 12px;
   scroll-margin-top: 70px;
@@ -380,7 +353,7 @@ async function submit() {
   display: flex;
   gap: 2px;
   background: var(--bg);
-  border-radius: 14px;
+  border-radius: var(--r-md);
   padding: 3px;
   margin-bottom: 10px;
   overflow-x: auto;
@@ -397,7 +370,7 @@ async function submit() {
   gap: 6px;
   border: 0;
   background: transparent;
-  border-radius: 11px;
+  border-radius: var(--r-sm);
   padding: 8px 12px;
   font-size: 12.5px;
   font-weight: 600;
@@ -411,24 +384,14 @@ async function submit() {
   stroke-width: 1.9;
 }
 .seg button.on {
-  background: var(--card);
+  background: var(--surface);
   color: var(--ink);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
+/* .field carries the border, padding and focus ring; this only adds the
+   post-type spacing on top. */
 .in {
-  width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 11px 13px;
   margin-bottom: 8px;
-  font-size: 14px;
-  font-family: inherit;
-  background: #fff;
-  color: var(--ink);
-  outline: none;
-}
-.in:focus {
-  border-color: rgba(0, 0, 0, 0.28);
 }
 .area {
   resize: vertical;
@@ -450,7 +413,7 @@ async function submit() {
   align-items: center;
   gap: 8px;
   border: 1px dashed var(--line);
-  border-radius: 14px;
+  border-radius: var(--r-md);
   padding: 10px 13px;
   margin-bottom: 8px;
   font-size: 13px;
@@ -475,7 +438,7 @@ async function submit() {
 }
 .dur {
   font-size: 12px;
-  color: #15803d;
+  color: var(--success);
   font-weight: 600;
   margin: 0 2px 8px;
 }
@@ -485,22 +448,24 @@ async function submit() {
   align-items: center;
   gap: 6px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--r-sm);
   padding: 8px 11px;
   margin-bottom: 8px;
-  background: #fff;
+  background: var(--surface);
   cursor: text;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
 .hashwrap:focus-within {
-  border-color: rgba(0, 0, 0, 0.28);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 .chip {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: var(--bg);
+  background: var(--surface-sunken);
   border: 1px solid var(--line);
-  border-radius: 99px;
+  border-radius: var(--r-full);
   padding: 3px 6px 3px 10px;
   font-size: 12.5px;
   font-weight: 600;
@@ -517,8 +482,8 @@ async function submit() {
   place-items: center;
 }
 .chip button:hover {
-  color: #dc2626;
-  background: #fef2f2;
+  color: var(--danger);
+  background: var(--danger-bg);
 }
 .chip button svg {
   width: 12px;
@@ -550,10 +515,10 @@ async function submit() {
   color: var(--ink-2);
   cursor: pointer;
   padding: 8px 10px;
-  border-radius: 99px;
+  border-radius: var(--r-full);
 }
 .attach:hover {
-  background: var(--bg);
+  background: var(--surface-sunken);
 }
 .attach svg {
   width: 18px;
@@ -565,13 +530,17 @@ async function submit() {
   align-items: center;
   gap: 8px;
   background: var(--ink);
-  color: #fff;
+  color: var(--ink-on-accent);
   border: 0;
-  border-radius: 99px;
-  padding: 9px 22px;
+  border-radius: var(--r-full);
+  padding: 10px 24px;
   font-weight: 700;
   font-size: 13.5px;
   cursor: pointer;
+  transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+}
+.post:not(:disabled):active {
+  transform: scale(0.97);
 }
 .post svg {
   width: 15px;
@@ -580,13 +549,15 @@ async function submit() {
 }
 .post:disabled {
   opacity: 0.55;
+  cursor: not-allowed;
 }
 .msg {
   font-size: 13px;
-  color: #dc2626;
+  line-height: 1.55;
+  color: var(--danger);
   margin: 8px 2px 0;
 }
 .msg.ok {
-  color: #15803d;
+  color: var(--success);
 }
 </style>

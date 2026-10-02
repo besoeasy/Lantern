@@ -47,9 +47,4 @@ onUnmounted(() => sub?.close?.());
   display: grid;
   gap: 12px;
 }
-.hint {
-  color: var(--ink-3);
-  font-size: 13px;
-  text-align: center;
-}
 </style>

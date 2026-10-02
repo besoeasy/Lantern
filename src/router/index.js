@@ -3,6 +3,7 @@ import HomeView from "@/views/HomeView.vue";
 import PostView from "@/views/PostView.vue";
 import SettingsView from "@/views/SettingsView.vue";
 import ComposeView from "@/views/ComposeView.vue";
+import BlogView from "@/views/BlogView.vue";
 import TagView from "@/views/TagView.vue";
 import ProfileView from "@/views/ProfileView.vue";
 
@@ -11,6 +12,7 @@ const router = createRouter({
   routes: [
     { path: "/", name: "home", component: HomeView },
     { path: "/compose", name: "compose", component: ComposeView },
+    { path: "/write", name: "write", component: BlogView },
     { path: "/tag/:tag", name: "tag", component: TagView },
     { path: "/profile/:id?", name: "profile", component: ProfileView },
     { path: "/post/:id", name: "post", component: PostView },

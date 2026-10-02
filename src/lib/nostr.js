@@ -1,66 +1,11 @@
-import { SimplePool, getEventHash, nip19 } from "nostr-tools";
+import { SimplePool, getEventHash } from "nostr-tools";
 import { CLIENT_TAG, POW_TARGET, FEED_KINDS, CONTENT_TTL_SECONDS, activeRelays, ensureRelays } from "./relays.js";
-import { tagVal } from "./event.js";
+import { tagVal, articleAddr } from "./event.js";
 import { cacheEvent } from "./db.js";
 import { db } from "./db.js";
+import { getSigner } from "./signer.js";
 
 export const pool = new SimplePool();
-
-export function hasNip07() {
-  return typeof window !== "undefined" && !!window.nostr;
-}
-
-export function diagnoseNip07() {
-  const w = typeof window !== "undefined" ? window : {};
-  const n = w.nostr || null;
-  return {
-    found: !!n,
-    hasGetPublicKey: !!n?.getPublicKey,
-    hasSignEvent: !!n?.signEvent,
-    hasEnable: !!n?.enable,
-    keys: n ? Object.keys(n) : [],
-  };
-}
-
-export function waitForNip07(timeoutMs = 3000) {
-  return new Promise((resolve) => {
-    if (hasNip07()) return resolve(true);
-    const start = Date.now();
-    const t = setInterval(() => {
-      if (hasNip07()) {
-        clearInterval(t);
-        resolve(true);
-      } else if (Date.now() - start > timeoutMs) {
-        clearInterval(t);
-        resolve(false);
-      }
-    }, 100);
-  });
-}
-
-export async function nip07Pubkey() {
-  const found = await waitForNip07();
-  if (!found || !window.nostr)
-    throw new Error("No NOSTR extension found (NIP-07). Install Alby or nos2x, then reload.");
-  // Alby requires enable() for permission; nos2x does not have it. Swallow enable errors.
-  try {
-    if (typeof window.nostr.enable === "function") await window.nostr.enable();
-  } catch {}
-  if (typeof window.nostr.getPublicKey !== "function")
-    throw new Error("Extension found but getPublicKey() missing. Update/reload extension.");
-  let pk;
-  try {
-    pk = await window.nostr.getPublicKey();
-  } catch (e) {
-    throw new Error(
-      "Extension rejected getPublicKey(): " +
-        (e?.message || "locked or denied. Unlock extension and approve."),
-    );
-  }
-  if (!/^[0-9a-f]{64}$/i.test(pk || ""))
-    throw new Error("Extension returned invalid pubkey: " + String(pk).slice(0, 32));
-  return pk;
-}
 
 function countLeadingZeroBits(hexId) {
   let bits = 0;
@@ -95,6 +40,8 @@ function minePow(template, target) {
 
 export async function signEvent(template) {
   const created_at = template.created_at || Math.floor(Date.now() / 1000);
+  const signer = getSigner();
+  if (!signer) throw new Error("Missing pubkey: login first.");
   const base = {
     kind: template.kind,
     created_at,
@@ -106,27 +53,16 @@ export async function signEvent(template) {
       ["client", CLIENT_TAG],
       ["expiration", String(created_at + CONTENT_TTL_SECONDS)],
     ],
-    pubkey: template.pubkey,
+    // The signer is the source of truth for who signs, so a stale pubkey on
+    // the template cannot produce an event the signer will not own.
+    pubkey: signer.pubkey,
   };
-  if (!base.pubkey) throw new Error("Missing pubkey: login first.");
-  if (!hasNip07() || typeof window.nostr?.signEvent !== "function")
-    throw new Error(
-      "NOSTR extension required (or signEvent missing). Reload page with extension enabled.",
-    );
-  // POW first (unsigned), then extension signs. Never send precomputed id/sig:
+  // POW first (unsigned), then the signer signs. Never send precomputed id/sig:
   // most extensions reject events that already carry id/sig.
   const mined = POW_TARGET > 0 ? minePow(base, POW_TARGET) : base;
   delete mined.id;
   delete mined.sig;
-  let signed;
-  try {
-    signed = await window.nostr.signEvent(mined);
-  } catch (e) {
-    throw new Error("Extension rejected signature: " + (e?.message || "denied in popup?"));
-  }
-  if (!signed?.sig || !signed?.id)
-    throw new Error("Extension returned unsigned event (no id/sig).");
-  return signed;
+  return signer.sign(mined);
 }
 
 export async function publishEvent(signed) {
@@ -169,14 +105,6 @@ export function subscribeTag(tag, onEvent, limit = 100) {
   });
 }
 
-export function shortPk(pk) {
-  try {
-    return nip19.npubEncode(pk).slice(-6);
-  } catch {
-    return (pk || "").slice(-6);
-  }
-}
-
 export function imetaList(ev) {
   return (ev.tags || [])
     .filter(([t]) => t === "imeta")
@@ -193,12 +121,6 @@ export function imetaList(ev) {
       }
       return o;
     });
-}
-
-export function ipfsToHttp(ipfsUrl) {
-  // Lantern renders ipfs:// directly via helia; this is only a label helper
-  if (!ipfsUrl?.startsWith("ipfs://")) return ipfsUrl;
-  return ipfsUrl;
 }
 
 // Tag readers live in event.js so db.js can share them without an import cycle.
@@ -259,7 +181,7 @@ export function subscribeComments(rootEv, onEvent) {
     filters.push({ kinds: [1111], "#E": [rootEv.id], limit: 100 });
     filters.push({ kinds: [1111], "#e": [rootEv.id], limit: 100 });
   } else if (rootEv.kind === 30023) {
-    const addr = `30023:${rootEv.pubkey}:${tagVal(rootEv, "d")}`;
+    const addr = articleAddr(rootEv);
     filters.push({ kinds: [1111], "#A": [addr], limit: 100 });
     filters.push({ kinds: [1111], "#a": [addr], limit: 100 });
     filters.push({ kinds: [1111], "#E": [rootEv.id], limit: 100 });
@@ -293,7 +215,7 @@ export function isCommentOn(ev, rootEv) {
     );
   }
   if (rootEv.kind === 30023) {
-    const addr = `30023:${rootEv.pubkey}:${tagVal(rootEv, "d")}`;
+    const addr = articleAddr(rootEv);
     return (
       ev.kind === 1111 &&
       (hasTagValue(ev, ["A", "a"], addr) || hasTagValue(ev, ["E", "e"], rootEv.id))
@@ -316,7 +238,7 @@ export async function postComment(rootEv, text, pubkey) {
       pubkey,
     };
   } else {
-    const addr = rootEv.kind === 30023 ? `30023:${rootEv.pubkey}:${tagVal(rootEv, "d")}` : null;
+    const addr = articleAddr(rootEv);
     template = {
       kind: 1111,
       created_at: Math.floor(Date.now() / 1000),
@@ -351,7 +273,7 @@ export function isReactionOn(ev, rootEv) {
   if (!ev || ev.kind !== 7 || !rootEv?.id) return false;
   if ((ev.tags || []).some(([t, v]) => t === "e" && v === rootEv.id)) return true;
   if (rootEv.kind === 30023) {
-    const addr = `30023:${rootEv.pubkey}:${tagVal(rootEv, "d")}`;
+    const addr = articleAddr(rootEv);
     return (ev.tags || []).some(([t, v]) => t === "a" && v === addr);
   }
   return false;
@@ -360,7 +282,7 @@ export function isReactionOn(ev, rootEv) {
 export function subscribeReactions(rootEv, onEvent, limit = 200) {
   const filters = [{ kinds: [7], "#e": [rootEv.id], limit }];
   if (rootEv.kind === 30023) {
-    const addr = `30023:${rootEv.pubkey}:${tagVal(rootEv, "d")}`;
+    const addr = articleAddr(rootEv);
     filters.push({ kinds: [7], "#a": [addr], limit });
   }
   return pool.subscribeMany(activeRelays(), filters, {
@@ -377,8 +299,7 @@ export async function postReaction(rootEv, emoji, pubkey) {
     ["e", rootEv.id],
     ["p", rootEv.pubkey],
   ];
-  if (rootEv.kind === 30023)
-    tags.push(["a", `30023:${rootEv.pubkey}:${tagVal(rootEv, "d")}`]);
+  if (rootEv.kind === 30023) tags.push(["a", articleAddr(rootEv)]);
   const signed = await signEvent({
     kind: 7,
     created_at: Math.floor(Date.now() / 1000),

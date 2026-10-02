@@ -31,7 +31,7 @@ function submit() {
     </li>
   </ul>
   <form class="add" @submit.prevent="submit">
-    <input v-model="draft" :placeholder="placeholder" />
+    <input v-model="draft" class="field" :placeholder="placeholder" />
     <button class="primary" type="submit"><Plus /><span>{{ submitLabel }}</span></button>
   </form>
   <p v-if="error" class="err">{{ error }}</p>
@@ -51,8 +51,8 @@ function submit() {
   gap: 8px;
   padding: 9px 11px;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
+  border-radius: var(--r-sm);
+  background: var(--surface);
 }
 .add {
   display: flex;
@@ -60,30 +60,24 @@ function submit() {
 }
 .add input {
   flex: 1;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 10px 12px;
-  font-size: 13px;
-  font-family: inherit;
-  outline: none;
-  min-width: 0;
-}
-.add input:focus {
-  border-color: rgba(0, 0, 0, 0.28);
 }
 .primary {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   background: var(--ink);
-  color: #fff;
+  color: var(--ink-on-accent);
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--r-sm);
   padding: 10px 14px;
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
   white-space: nowrap;
+  transition: opacity var(--dur) var(--ease);
+}
+.primary:active {
+  opacity: 0.85;
 }
 .primary svg {
   width: 15px;
@@ -92,7 +86,7 @@ function submit() {
 }
 .err {
   font-size: 12.5px;
-  color: #dc2626;
+  color: var(--danger);
   margin: 8px 0 0;
 }
 </style>

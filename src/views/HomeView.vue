@@ -44,7 +44,7 @@ onUnmounted(() => feed.stop());
 
 <template>
   <div class="home">
-    <LoginPrompt title="Join the discussion" subtitle="Connect a NIP-07 extension to comment." />
+    <LoginPrompt title="Join the discussion" subtitle="Sign in with an extension or a key to comment." />
 
     <div class="pills">
       <button
@@ -68,6 +68,9 @@ onUnmounted(() => feed.stop());
   display: grid;
   gap: 12px;
 }
+/* Edge-to-edge filter bar. The negative margins cancel .main's 16px gutter
+   and the 294px centres the padding on the 620px shell, so the row spans the
+   viewport but its contents stay aligned with the cards below it. */
 .pills {
   position: sticky;
   top: 0;
@@ -76,9 +79,11 @@ onUnmounted(() => feed.stop());
   gap: 2px;
   overflow-x: auto;
   width: 100vw;
-  margin: -14px 0 0 calc(50% - 50vw);
-  padding: 8px max(14px, calc(50vw - 286px));
-  background: #fff;
+  margin: -16px 0 0 calc(50% - 50vw);
+  padding: 8px max(16px, calc(50vw - 294px));
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  backdrop-filter: saturate(1.6) blur(16px);
+  -webkit-backdrop-filter: saturate(1.6) blur(16px);
   border-bottom: 1px solid var(--line);
   scrollbar-width: none;
 }
@@ -90,21 +95,20 @@ onUnmounted(() => feed.stop());
   border: 0;
   border-bottom: 2px solid transparent;
   background: transparent;
-  padding: 7px 10px;
+  padding: 8px 11px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
   color: var(--ink-3);
   text-transform: capitalize;
   white-space: nowrap;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.pills button:hover {
+  color: var(--ink-2);
 }
 .pills button.on {
   color: var(--ink);
-  border-bottom-color: var(--ink);
-}
-.hint {
-  color: var(--ink-3);
-  font-size: 13px;
-  text-align: center;
+  border-bottom-color: var(--accent);
 }
 </style>

@@ -21,12 +21,12 @@ defineProps({ ev: Object });
 
 <style scoped>
 .card {
-  background: #09090b;
-  color: #fafafa;
-  border-radius: var(--radius);
+  background: var(--media-bg);
+  color: var(--media-ink);
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   padding: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--media-line);
 }
 .head {
   display: flex;
@@ -39,36 +39,43 @@ defineProps({ ev: Object });
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: #fff;
-  color: #09090b;
+  background: var(--media-ink);
+  color: var(--media-bg);
   padding: 3px 9px;
-  border-radius: 99px;
+  border-radius: var(--r-full);
   flex-shrink: 0;
 }
 .t {
   font-size: 14px;
   letter-spacing: -0.01em;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .vids {
   display: grid;
   gap: 8px;
 }
 .vids :deep(.media video) {
-  border-radius: 12px;
+  border-radius: var(--r-sm);
 }
 .desc {
   font-size: 13px;
-  color: #d4d4d8;
+  color: var(--media-ink-2);
   line-height: 1.6;
   margin: 10px 0 0;
   overflow-wrap: anywhere;
 }
 .pk {
   font-size: 11.5px;
-  color: #71717a;
+  color: var(--media-ink-3);
   margin-top: 6px;
   display: block;
   text-decoration: none;
+}
+.pk:hover {
+  color: var(--media-ink-2);
+  text-decoration: underline;
 }
 </style>

@@ -53,8 +53,9 @@ function retry() {
 .media video {
   width: 100%;
   display: block;
-  border-radius: 14px;
-  background: #101013;
+  border-radius: var(--r-md);
+  /* Letterbox colour while IPFS resolves, so a slow fetch does not flash white. */
+  background: var(--media-bg);
   max-height: 560px;
   object-fit: cover;
 }
@@ -62,7 +63,7 @@ function retry() {
   width: 100%;
 }
 .state {
-  border-radius: 14px;
+  border-radius: var(--r-md);
   min-height: 120px;
   display: grid;
   place-items: center;
@@ -70,19 +71,23 @@ function retry() {
 }
 .err {
   color: var(--ink-3);
-  background: var(--bg);
+  background: var(--surface-2);
   border: 1px dashed var(--line);
   padding: 20px;
   gap: 10px;
 }
 .retry {
   border: 1px solid var(--line);
-  background: var(--card);
+  background: var(--surface);
   color: var(--ink);
-  border-radius: 99px;
-  padding: 7px 18px;
+  border-radius: var(--r-full);
+  padding: 8px 18px;
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
+  transition: background var(--dur) var(--ease);
+}
+.retry:hover {
+  background: var(--surface-sunken);
 }
 </style>

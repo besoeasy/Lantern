@@ -29,11 +29,11 @@ defineProps({ ev: Object });
 
 <style scoped>
 .card {
-  background: var(--card);
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow);
-  padding: 15px 16px;
+  padding: 16px 17px;
 }
 .row {
   display: flex;
@@ -44,18 +44,20 @@ defineProps({ ev: Object });
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0a0a0a, #52525b);
-  color: #fff;
+  background: linear-gradient(135deg, var(--ink), var(--ink-3));
+  color: var(--ink-on-accent);
   display: grid;
   place-items: center;
   font-size: 14px;
   font-weight: 700;
+  flex-shrink: 0;
 }
 .meta {
   display: flex;
-  gap: 6px;
+  gap: 7px;
   align-items: baseline;
   font-size: 13px;
+  min-width: 0;
 }
 .pk {
   color: var(--ink);
@@ -63,8 +65,12 @@ defineProps({ ev: Object });
   letter-spacing: -0.01em;
   text-decoration: none;
 }
+.pk:hover {
+  text-decoration: underline;
+}
 .time {
   color: var(--ink-3);
+  flex-shrink: 0;
 }
 .text {
   margin: 10px 0 0;

@@ -52,10 +52,12 @@ function openPost(e, id) {
 .postwrap {
   display: grid;
   cursor: pointer;
-  border-radius: var(--radius);
+  border-radius: var(--r-lg);
+  transition: transform var(--dur) var(--ease);
 }
-.postwrap:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
+/* Pressing a card should feel like pressing it, but only for pointers — the
+   :focus-visible ring in App.vue owns the keyboard case. */
+.postwrap:active {
+  transform: scale(0.985);
 }
 </style>

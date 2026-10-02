@@ -26,9 +26,9 @@ defineProps({ ev: Object });
 
 <style scoped>
 .card {
-  background: var(--card);
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -38,6 +38,8 @@ header {
   padding: 12px 14px;
   align-items: center;
 }
+/* The Instagram-style ring is a fixed brand gradient, so it stays literal in
+   both schemes; only the inner disc follows the theme. */
 .ring {
   padding: 2px;
   border-radius: 50%;
@@ -47,13 +49,13 @@ header {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   display: grid;
   place-items: center;
   font-size: 13px;
   font-weight: 800;
-  border: 2px solid #fff;
+  border: 2px solid var(--surface);
 }
 .pk {
   font-weight: 700;
@@ -62,6 +64,9 @@ header {
   display: block;
   color: inherit;
   text-decoration: none;
+}
+.pk:hover {
+  text-decoration: underline;
 }
 .title {
   font-size: 12px;

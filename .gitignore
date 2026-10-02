@@ -25,6 +25,10 @@ pnpm-debug.log*
 .env.*
 !.env.example
 
+# test artefacts
+.playwright-mcp/
+test-results/
+
 # editor / os
 .vscode/*
 !.vscode/extensions.json

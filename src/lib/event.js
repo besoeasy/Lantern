@@ -13,3 +13,12 @@ export function expiryOf(ev) {
   const ts = Number(raw);
   return Number.isFinite(ts) ? ts : 0;
 }
+
+// NIP-01 coordinate for a kind-30023 article: "30023:<pubkey>:<d-tag>".
+// Replies and reactions address articles by this rather than by event id,
+// since a long-form post is replaceable and its id changes when it does.
+// Returns null for any other kind, so callers can branch on it directly.
+export function articleAddr(ev) {
+  if (ev?.kind !== 30023) return null;
+  return `30023:${ev.pubkey}:${tagVal(ev, "d")}`;
+}

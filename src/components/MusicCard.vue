@@ -68,18 +68,21 @@ const metaLine = computed(() => {
 </template>
 
 <style scoped>
+/* Dark in both schemes, so it reads the --media-* ink pairs, not --ink-*.
+   The gradient carries the warmth that makes a track card feel distinct from
+   a video card. */
 .card {
   background: linear-gradient(160deg, #18181b 0%, #27272a 60%, #3f3f46 100%);
-  color: #fafafa;
-  border-radius: var(--radius);
+  color: var(--media-ink);
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--media-line);
 }
 .stack {
-  border-radius: 12px;
+  border-radius: var(--r-sm);
   overflow: hidden;
-  background: #09090b;
+  background: var(--media-bg);
 }
 .cover :deep(.media img) {
   border-radius: 0;
@@ -96,12 +99,12 @@ const metaLine = computed(() => {
   width: 40px;
   height: 40px;
   stroke-width: 1.4;
-  color: #71717a;
+  color: var(--media-ink-3);
 }
 .player :deep(audio) {
   width: 100%;
   height: 40px;
-  accent-color: #fafafa;
+  accent-color: var(--media-ink);
   display: block;
 }
 .body {
@@ -122,14 +125,14 @@ const metaLine = computed(() => {
   gap: 6px;
   font-size: 14px;
   font-weight: 600;
-  color: #d4d4d8;
+  color: var(--media-ink-2);
 }
 .artist svg {
   width: 15px;
   height: 15px;
   flex-shrink: 0;
   stroke-width: 2;
-  color: #a1a1aa;
+  color: var(--media-ink-3);
 }
 .artist span {
   overflow: hidden;
@@ -141,19 +144,19 @@ const metaLine = computed(() => {
   align-items: center;
   gap: 7px;
   font-size: 12.5px;
-  color: #a1a1aa;
+  color: var(--media-ink-3);
 }
 .meta .e {
   font-size: 10px;
   font-weight: 800;
-  color: #fafafa;
+  color: var(--media-ink);
   background: rgba(250, 250, 250, 0.14);
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   padding: 1px 5px;
 }
 .desc {
   font-size: 13.5px;
-  color: #e4e4e7;
+  color: var(--media-ink-2);
   line-height: 1.6;
   margin: 4px 0 0;
   overflow-wrap: anywhere;
@@ -178,7 +181,7 @@ const metaLine = computed(() => {
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #a1a1aa;
+  color: var(--media-ink-3);
 }
 .mime {
   font-size: 13px;
@@ -187,20 +190,24 @@ const metaLine = computed(() => {
 .card :deep(audio) {
   width: 100%;
   height: 36px;
-  accent-color: #fafafa;
+  accent-color: var(--media-ink);
 }
 .cap {
   font-size: 13.5px;
-  color: #e4e4e7;
+  color: var(--media-ink-2);
   line-height: 1.6;
   margin: 10px 0 0;
   overflow-wrap: anywhere;
 }
 .pk {
   font-size: 11.5px;
-  color: #71717a;
+  color: var(--media-ink-3);
   margin-top: 8px;
   display: block;
   text-decoration: none;
+}
+.pk:hover {
+  color: var(--media-ink-2);
+  text-decoration: underline;
 }
 </style>

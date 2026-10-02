@@ -4,9 +4,11 @@ import { useRoute } from "vue-router";
 import { Braces, Copy, Hourglass, Link2 } from "@lucide/vue";
 import { getEventById, expiryOf } from "@/lib/nostr.js";
 import { countdownText } from "@/lib/format.js";
+import { readingMinutes } from "@/lib/markdown.js";
 import { useCopy } from "@/composables/useCopy.js";
 import BackBar from "@/components/BackBar.vue";
 import PostCard from "@/components/PostCard.vue";
+import ArticleReader from "@/components/ArticleReader.vue";
 import CommentSection from "@/components/CommentSection.vue";
 import ReactionBar from "@/components/ReactionBar.vue";
 
@@ -19,6 +21,9 @@ const now = ref(Date.now());
 let ticker = null;
 
 const rawJson = computed(() => (ev.value ? JSON.stringify(ev.value, null, 2) : ""));
+
+// Long-form gets its own reader; every other kind uses the feed card.
+const isArticle = computed(() => ev.value?.kind === 30023);
 
 const expiryMs = computed(() => {
   const sec = expiryOf(ev.value);
@@ -95,7 +100,11 @@ function copyShare() {
     <p v-if="loading" class="hint">Loading post…</p>
     <p v-else-if="err" class="hint">{{ err }}</p>
     <template v-else-if="ev">
-      <PostCard :ev="ev" />
+      <!-- An article is shown in full rather than through its feed card: the
+           card clamps to three lines, which is right in a feed and useless on
+           the page the reader asked for. -->
+      <ArticleReader v-if="isArticle" :ev="ev" />
+      <PostCard v-else :ev="ev" />
       <ReactionBar :ev="ev" />
       <div class="meta-row">
         <div v-if="expiryText" class="expiry" :class="{ gone: expiryText === 'Expired' }">
@@ -132,18 +141,20 @@ function copyShare() {
   align-items: center;
   gap: 7px;
   max-width: 100%;
-  background: var(--card);
-  border: 1px dashed var(--line);
-  border-radius: 99px;
-  box-shadow: var(--shadow);
-  padding: 7px 14px;
+  background: var(--surface);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-full);
+  box-shadow: var(--shadow-sm);
+  padding: 8px 14px;
   font-size: 12px;
   color: var(--ink-2);
   cursor: pointer;
   font-family: inherit;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 .share:hover {
   border-style: solid;
+  border-color: var(--ink-3);
   color: var(--ink);
 }
 .share svg {
@@ -157,11 +168,12 @@ function copyShare() {
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 240px;
+  font-family: var(--font-mono);
 }
 .share .copied {
   flex-shrink: 0;
   font-weight: 700;
-  color: #15803d;
+  color: var(--success);
 }
 .expiry {
   display: inline-flex;
@@ -172,9 +184,9 @@ function copyShare() {
   letter-spacing: 0.04em;
   color: var(--ink-2);
   border: 1px solid var(--line);
-  background: var(--card);
+  background: var(--surface);
   padding: 6px 14px;
-  border-radius: 99px;
+  border-radius: var(--r-full);
   font-variant-numeric: tabular-nums;
 }
 .expiry svg {
@@ -183,9 +195,9 @@ function copyShare() {
   stroke-width: 1.9;
 }
 .expiry.gone {
-  color: #dc2626;
-  border-color: #fecaca;
-  background: #fef2f2;
+  color: var(--danger);
+  border-color: var(--danger-line);
+  background: var(--danger-bg);
 }
 .meta-row {
   display: flex;
@@ -198,9 +210,9 @@ function copyShare() {
   margin-left: auto;
 }
 .raw {
-  background: var(--card);
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--r-md);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -224,15 +236,18 @@ function copyShare() {
   font-size: 12px;
   font-weight: 600;
   border: 1px solid var(--line);
-  background: transparent;
+  background: var(--surface);
   color: var(--ink-2);
-  padding: 6px 14px;
-  border-radius: 99px;
+  padding: 7px 14px;
+  border-radius: var(--r-full);
   cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
 }
-.raw-toggle {
+.raw-toggle:hover,
+.raw-copy:hover {
+  border-color: var(--line-strong);
   color: var(--ink);
-  background: var(--card);
 }
 .raw-toggle svg,
 .raw-copy svg {
@@ -247,15 +262,10 @@ function copyShare() {
   overflow: auto;
   font-size: 11.5px;
   line-height: 1.5;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-mono);
   white-space: pre-wrap;
   word-break: break-all;
   color: var(--ink-2);
-  background: var(--bg);
-}
-.hint {
-  color: var(--ink-3);
-  font-size: 13px;
-  text-align: center;
+  background: var(--surface-2);
 }
 </style>

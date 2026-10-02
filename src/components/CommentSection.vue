@@ -2,6 +2,7 @@
 import { onUnmounted, ref, watch } from "vue";
 import { subscribeComments, postComment, isCommentOn } from "@/lib/nostr.js";
 import { useEventList } from "@/composables/useEventList.js";
+import { useAsyncAction } from "@/composables/useAsyncAction.js";
 import { useUserStore } from "@/stores/user.js";
 import AuthorLink from "./AuthorLink.vue";
 
@@ -18,8 +19,7 @@ const {
   guard: (ev) => isCommentOn(ev, props.root),
 });
 const text = ref("");
-const busy = ref(false);
-const msg = ref("");
+const { busy, msg, run, say } = useAsyncAction({ pubkey: () => user.pubkey });
 let sub = null;
 
 watch(
@@ -36,22 +36,12 @@ watch(
 onUnmounted(() => sub?.close?.());
 
 async function submit() {
-  msg.value = "";
-  if (!user.pubkey) {
-    msg.value = "Login to comment.";
-    return;
-  }
-  if (!text.value.trim()) return;
-  busy.value = true;
-  try {
-    await postComment(props.root, text.value.trim(), user.pubkey);
-    text.value = "";
-    msg.value = "Comment published.";
-  } catch (e) {
-    msg.value = "Failed: " + e.message;
-  } finally {
-    busy.value = false;
-  }
+  const body = text.value.trim();
+  if (!body) return;
+  const done = await run(() => postComment(props.root, body, user.pubkey));
+  if (done === undefined) return;
+  text.value = "";
+  say("Comment published.");
 }
 </script>
 
@@ -59,7 +49,7 @@ async function submit() {
   <section class="comments">
     <h3>Comments ({{ comments.length }})</h3>
     <div class="form">
-      <textarea v-model="text" rows="2" placeholder="Write a comment…" />
+      <textarea v-model="text" class="field" rows="2" placeholder="Write a comment…" />
       <button :disabled="busy" @click="submit">{{ busy ? "Publishing…" : "Comment" }}</button>
     </div>
     <p v-if="msg" class="msg">{{ msg }}</p>
@@ -73,9 +63,9 @@ async function submit() {
 
 <style scoped>
 .comments {
-  background: var(--card);
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   padding: 16px;
   display: grid;
@@ -91,23 +81,14 @@ h3 {
   gap: 8px;
 }
 textarea {
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 11px 13px;
-  font-size: 14px;
-  font-family: inherit;
   resize: vertical;
-  outline: none;
-}
-textarea:focus {
-  border-color: rgba(0, 0, 0, 0.28);
 }
 button {
   background: var(--ink);
-  color: #fff;
+  color: var(--ink-on-accent);
   border: 0;
-  border-radius: 99px;
-  padding: 9px;
+  border-radius: var(--r-full);
+  padding: 9px 16px;
   font-weight: 700;
   font-size: 13.5px;
   cursor: pointer;
