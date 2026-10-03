@@ -20,12 +20,19 @@ export const useFeedStore = defineStore("feed", () => {
     loading.value = true;
     reset();
     const cached = await getCachedFeed(kinds).catch(() => []);
+    console.log("[lantern] feed: cached events", cached.length);
     cached.forEach(add);
     loading.value = false;
     closer?.close?.();
     // Probe relays first so we only open sockets to ones actually online.
-    await ensureRelays();
-    closer = subscribeFeed(kinds, add, 100);
+    const relays = await ensureRelays();
+    console.log("[lantern] feed: subscribing on relays", relays);
+    let n = 0;
+    closer = subscribeFeed(kinds, (ev) => {
+      if (++n % 25 === 0) console.log("[lantern] feed: events so far", n);
+      add(ev);
+    }, 100);
+    console.log("[lantern] feed: subscription open");
     pruneCache();
   }
 

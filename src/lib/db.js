@@ -50,11 +50,7 @@ export async function getCachedTag(tag, limit = 100) {
     .filter((ev) => (ev.tags || []).some(([t, v]) => t === "t" && v === tag))
     .toArray();
   return all
-    .filter(
-      (ev) =>
-        (ev.tags || []).some(([t, v]) => t === "client" && v === "lantern") &&
-        !isExpired(ev),
-    )
+    .filter((ev) => !isExpired(ev))
     .sort((a, b) => b.created_at - a.created_at)
     .slice(0, limit);
 }
@@ -70,7 +66,6 @@ export async function getCachedAuthorPosts(pubkey, kinds, limit = 50) {
     .filter(
       (ev) =>
         (!kinds?.length || kinds.includes(ev.kind)) &&
-        (ev.tags || []).some(([t, v]) => t === "client" && v === "lantern") &&
         !isExpired(ev),
     )
     .sort((a, b) => b.created_at - a.created_at)

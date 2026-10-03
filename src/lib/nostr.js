@@ -72,8 +72,12 @@ export async function signEvent(template) {
 
 export async function publishEvent(signed) {
   const targets = (await ensureRelays()) ?? activeRelays();
+  console.log("[lantern] publish to", targets);
   const pubs = pool.publish(targets, signed);
-  await Promise.allSettled(pubs);
+  const results = await Promise.allSettled(pubs);
+  results.forEach((r, i) =>
+    console.log(`[lantern] publish -> ${targets[i]}:`, r.status === "fulfilled" ? "ok" : r.reason?.message || r.reason),
+  );
   await cacheEvent(signed);
   return signed;
 }
@@ -82,8 +86,11 @@ export function subscribeFeed(kinds, onEvent, limit = 100) {
   // No client-tag scoping: subscribe to the firehose for these kinds and let
   // every event through. `limit` keeps the initial burst bounded.
   const filter = { kinds, limit };
+  console.log("[lantern] subscribeFeed:", JSON.stringify(filter), "on", activeRelays());
+  let n = 0;
   return pool.subscribeMany(activeRelays(), [filter], {
     onevent: (ev) => {
+      if (++n % 25 === 0) console.log("[lantern] subscribeFeed: events", n);
       cacheEvent(ev);
       onEvent?.(ev);
     },

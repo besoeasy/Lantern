@@ -74,6 +74,10 @@ export async function refreshRelays() {
   const pool = candidates.length ? candidates : DEFAULT_RELAYS;
   const results = await Promise.all(pool.map((r) => probe(r)));
   const alive = pool.filter((_, i) => results[i]);
+  console.log(
+    "[lantern] relay probe:",
+    pool.map((r, i) => `${r}=${results[i] ? "ok" : "dead"}`).join(", "),
+  );
   // Never leave the user with zero relays: a probe failure is not proof of death.
   ok = alive.length ? alive : pool;
   probedAt = Date.now();
