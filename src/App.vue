@@ -95,6 +95,8 @@ onMounted(() => user.autoLogin());
   /* Page rhythm. */
   --page-gap: 14px;
   --card-pad: 17px;
+  --shell: 620px;
+  --gutter: 16px;
 
   /* Accent + status. Amber "lantern" is the brand, used sparingly. */
   --accent: #b45309;
@@ -201,6 +203,12 @@ body {
   gap: 8px;
   padding: 10px 16px;
 }
+
+/* Keep the shell width in one variable so every screen matches Settings. */
+.topbar-inner,
+.shell {
+  max-width: var(--shell);
+}
 .brand {
   display: flex;
   align-items: center;
@@ -283,7 +291,7 @@ body {
   }
 }
 .shell {
-  max-width: 620px;
+  max-width: var(--shell);
   margin: 0 auto;
   min-height: 100vh;
 }

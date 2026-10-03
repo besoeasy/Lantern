@@ -80,7 +80,7 @@ onUnmounted(() => feed.stop());
   overflow-x: auto;
   width: 100vw;
   margin: -16px 0 0 calc(50% - 50vw);
-  padding: 8px max(16px, calc(50vw - 294px));
+  padding: 8px max(16px, calc(50vw - var(--shell) / 2 + 16px));
   background: color-mix(in srgb, var(--surface) 86%, transparent);
   backdrop-filter: saturate(1.6) blur(16px);
   -webkit-backdrop-filter: saturate(1.6) blur(16px);
