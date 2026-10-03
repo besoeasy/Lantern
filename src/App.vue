@@ -68,16 +68,15 @@ onMounted(() => user.autoLogin());
 <style>
 /* Design tokens. Every colour, radius, shadow and duration in the app comes
    from here; component styles reference these and never hardcode a hex.
-   The dark block below remaps the same names, so a component needs no
-   dark-mode rules of its own. */
+   Flat light only: no dark-mode block, the canvas is pure white. */
 :root {
   color-scheme: light;
 
-  /* Surfaces, back to front. */
-  --bg: #f4f4f5;
+  /* Surfaces, back to front. Background is pure white everywhere. */
+  --bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #fafafa;
-  --surface-sunken: #ececee;
+  --surface-2: #ffffff;
+  --surface-sunken: #f4f4f5;
 
   /* Text. --ink-3 is the faintest step that still clears WCAG AA (5.3:1) on
      --bg; the zinc grey one shade lighter sits at 4.4:1 and fails. */
@@ -136,44 +135,6 @@ onMounted(() => user.autoLogin());
     sans-serif;
   --font-serif: Georgia, "Times New Roman", serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-
-    --bg: #09090b;
-    --surface: #18181b;
-    --surface-2: #1d1d20;
-    --surface-sunken: #27272a;
-
-    --ink: #fafafa;
-    --ink-2: #a1a1aa;
-    --ink-3: #8b8b95;
-    --ink-on-accent: #09090b;
-
-    --line: rgba(250, 250, 250, 0.11);
-    --line-strong: rgba(250, 250, 250, 0.2);
-
-    --accent: #fbbf24;
-    --accent-soft: #422c06;
-    --danger: #f87171;
-    --danger-bg: #2a1214;
-    --danger-line: #7f1d1d;
-    --success: #4ade80;
-    --success-bg: #0d2317;
-    --success-line: #14532d;
-    --info: #93c5fd;
-    --info-bg: #172554;
-
-    --article-bg: #1c1917;
-    --article-line: #3b3026;
-
-    /* Shadows read as a faint lightening on dark, not a darkening. */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -14px rgba(0, 0, 0, 0.7);
-    --shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.5), 0 18px 40px -18px rgba(0, 0, 0, 0.8);
-  }
 }
 
 * {
