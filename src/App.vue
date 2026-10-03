@@ -20,7 +20,7 @@ onMounted(() => user.autoLogin());
     <header class="topbar">
       <div class="topbar-inner">
         <RouterLink to="/" class="brand" aria-label="Lantern home">
-          <span class="brand-dot" aria-hidden="true"></span>
+          <span class="brand-mark" aria-hidden="true"></span>
           <span>Lantern</span>
         </RouterLink>
         <nav class="tabs" aria-label="Primary">
@@ -216,9 +216,9 @@ body {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: color-mix(in srgb, var(--surface) 82%, transparent);
-  backdrop-filter: saturate(1.8) blur(24px);
-  -webkit-backdrop-filter: saturate(1.8) blur(24px);
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  backdrop-filter: saturate(1.6) blur(16px);
+  -webkit-backdrop-filter: saturate(1.6) blur(16px);
   border-bottom: 1px solid var(--line);
   padding-top: env(safe-area-inset-top);
 }
@@ -234,78 +234,96 @@ body {
 .brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 17px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  gap: 10px;
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--ink);
   text-decoration: none;
   white-space: nowrap;
 }
-.brand-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 70%, transparent);
+/* Vercel-style mark: black triangle-ish lockup, small and sharp. */
+.brand-mark {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--ink);
   flex: none;
 }
+/* Plain nav links; the active one is full-ink + underlined. */
 .tabs {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 18px;
 }
 .tab {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  font-weight: 550;
+  letter-spacing: -0.005em;
   color: var(--ink-3);
   text-decoration: none;
-  padding: 8px 12px;
-  border-radius: var(--r-sm);
+  padding: 8px 2px;
   white-space: nowrap;
-  transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+  transition: color var(--dur) var(--ease);
 }
 .tab svg {
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
   stroke-width: 1.8;
-  transition: transform var(--dur) var(--ease);
+}
+.tab:hover {
+  color: var(--ink);
 }
 .tab.on {
   color: var(--ink);
-  background: var(--surface-sunken);
 }
-.tab:active svg {
-  transform: scale(0.92);
+/* Vercel uses a small underline for the current section. */
+.tab.on::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ink);
 }
-/* Create reads as the one action button in the bar. */
+/* Create is the single solid button, the way Vercel uses a black CTA. */
 .tab.create {
-  background: var(--accent);
-  color: var(--ink-on-accent);
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
   border-radius: var(--r-full);
-  padding: 8px 14px;
+  padding: 7px 13px;
+}
+.tab.create:hover {
+  color: var(--bg);
+  opacity: 0.88;
+}
+.tab.create::after {
+  display: none;
 }
 .tab.create svg {
-  width: 17px;
-  height: 17px;
-  stroke-width: 2.4;
-}
-.tab.create:active {
-  transform: scale(0.96);
+  width: 13px;
+  height: 13px;
+  stroke-width: 2.2;
 }
 @media (max-width: 480px) {
+  .tabs {
+    gap: 12px;
+  }
   .tab {
-    padding: 8px 10px;
+    padding: 8px 1px;
   }
   .tab-label {
     display: none;
   }
   .tab.create {
-    padding: 8px 12px;
+    padding: 7px 11px;
   }
 }
 .shell {
