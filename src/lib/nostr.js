@@ -7,6 +7,18 @@ import { getSigner } from "./signer.js";
 
 export const pool = new SimplePool();
 
+// SimplePool.subscribeMany sends ONE filter as `filters: [f]`. Passing an
+// array (as this app did) nests it to `filters: [[f1, f2]]`, which real
+// relays reject — every live subscription silently yielded zero events.
+// Multi-filter OR semantics go through subscribeMap instead.
+function subscribeMany(relays, filters, params) {
+  if (filters.length === 1) return pool.subscribeMany(relays, filters[0], params);
+  return pool.subscribeMap(
+    relays.flatMap((url) => filters.map((filter) => ({ url, filter }))),
+    params,
+  );
+}
+
 function countLeadingZeroBits(hexId) {
   let bits = 0;
   for (const ch of hexId) {
@@ -88,7 +100,7 @@ export function subscribeFeed(kinds, onEvent, limit = 100) {
   const filter = { kinds, limit };
   console.log("[lantern] subscribeFeed:", JSON.stringify(filter), "on", activeRelays());
   let n = 0;
-  return pool.subscribeMany(activeRelays(), [filter], {
+  return pool.subscribeMany(activeRelays(), filter, {
     onevent: (ev) => {
       if (++n % 25 === 0) console.log("[lantern] subscribeFeed: events", n);
       cacheEvent(ev);
@@ -105,7 +117,7 @@ export async function refreshRelays() {
 // Lantern-scoped tag timeline: relay prefilter plus local guards, same as the feed.
 export function subscribeTag(tag, onEvent, limit = 100) {
   const filter = { kinds: FEED_KINDS, limit, "#t": [tag] };
-  return pool.subscribeMany(activeRelays(), [filter], {
+  return subscribeMany(activeRelays(), [filter], {
     onevent: (ev) => {
       // Relays routinely ignore tag filters — verify locally.
       if (!(ev.tags || []).some(([t, v]) => t === "t" && v === tag)) return;
@@ -202,7 +214,7 @@ export function subscribeComments(rootEv, onEvent) {
     filters.push({ kinds: [1111], "#E": [rootEv.id], limit: 100 });
     filters.push({ kinds: [1111], "#e": [rootEv.id], limit: 100 });
   }
-  return pool.subscribeMany(activeRelays(), filters, {
+  return subscribeMany(activeRelays(), filters, {
     onevent: (ev) => {
       // Relays routinely ignore tag filters — verify locally so a post
       // never renders the whole network's replies.
@@ -296,7 +308,7 @@ export function subscribeReactions(rootEv, onEvent, limit = 200) {
     const addr = articleAddr(rootEv);
     filters.push({ kinds: [7], "#a": [addr], limit });
   }
-  return pool.subscribeMany(activeRelays(), filters, {
+  return subscribeMany(activeRelays(), filters, {
     onevent: (ev) => {
       if (!isReactionOn(ev, rootEv)) return;
       cacheEvent(ev);
@@ -336,7 +348,7 @@ export async function getAuthorProfile(pubkey) {
 // Lantern-scoped author timeline.
 export function subscribeAuthorPosts(pubkey, onEvent, kinds = FEED_KINDS, limit = 50) {
   const filter = { kinds, authors: [pubkey], limit };
-  return pool.subscribeMany(activeRelays(), [filter], {
+  return subscribeMany(activeRelays(), [filter], {
     onevent: (ev) => {
       if (ev.pubkey !== pubkey) return;
       cacheEvent(ev);
