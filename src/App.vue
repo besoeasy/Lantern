@@ -77,6 +77,8 @@ onMounted(() => user.autoLogin());
   --surface: #ffffff;
   --surface-2: #ffffff;
   --surface-sunken: #f4f4f5;
+  /* One card colour; replaces ad-hoc --card references. */
+  --card: var(--surface);
 
   /* Text. --ink-3 is the faintest step that still clears WCAG AA (5.3:1) on
      --bg; the zinc grey one shade lighter sits at 4.4:1 and fails. */
@@ -89,6 +91,10 @@ onMounted(() => user.autoLogin());
   /* Lines and rings. */
   --line: rgba(9, 9, 11, 0.09);
   --line-strong: rgba(9, 9, 11, 0.16);
+
+  /* Page rhythm. */
+  --page-gap: 14px;
+  --card-pad: 17px;
 
   /* Accent + status. Amber "lantern" is the brand, used sparingly. */
   --accent: #b45309;
@@ -285,7 +291,95 @@ body {
   padding: 16px 16px 32px;
 }
 
-/* The shared text-field look. Composer, comments, the sign-in box and the two
+/* Surface container. The one card shape every screen uses: white surface,
+   one radius, one shadow, one padding step. Views give it a local class but
+   the token is shared so it cannot drift. */
+.cardbox {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow);
+  padding: 17px;
+}
+
+/* Page header: one size/letter-spacing for the title, one for the lede. */
+.pagehead h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+}
+.pagehead p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* Primary solid action (Post, Publish, Sign out, etc.). */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: var(--ink);
+  color: var(--on-ink);
+  border: 0;
+  border-radius: var(--r-full);
+  padding: 10px 22px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+}
+.btn-primary:not(:disabled):active {
+  transform: scale(0.97);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Secondary quiet pill (ghost in older screens). */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  color: var(--ink-2);
+  border: 0;
+  border-radius: var(--r-full);
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--surface-sunken);
+  color: var(--ink);
+}
+
+/* Segmented control container: composer tabs, editor modes. */
+.segbox {
+  display: flex;
+  gap: 2px;
+  background: var(--surface-sunken);
+  border-radius: var(--r-md);
+  padding: 3px;
+}
+
+/* Inline meta chip: npub, website, badges. */
+.chipbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-sunken);
+  border-radius: var(--r-full);
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+/* Shared text-field look. Composer, comments, the sign-in box and the two
    Settings lists each spelled out the same border/padding/focus rules; scoped
    styles meant they had to be copied into every one. */
 .field {

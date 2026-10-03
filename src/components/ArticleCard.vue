@@ -18,7 +18,7 @@ const lead = computed(() => (summary.value ? "" : excerpt(props.ev?.content, 180
 </script>
 
 <template>
-  <article class="card">
+  <article class="cardbox">
     <div class="k">Article · {{ minutes }} min</div>
     <h3>{{ title }}</h3>
     <Markdown v-if="summary" class="sum" inline :source="summary" />
@@ -28,7 +28,7 @@ const lead = computed(() => (summary.value ? "" : excerpt(props.ev?.content, 180
 </template>
 
 <style scoped>
-.card {
+.cardbox {
   background: var(--article-bg);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);

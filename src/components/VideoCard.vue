@@ -6,7 +6,7 @@ defineProps({ ev: Object });
 </script>
 
 <template>
-  <article class="card">
+  <article class="cardbox">
     <div class="head">
       <span class="badge">{{ ev.kind === 22 ? "Reel" : "Video" }}</span>
       <strong class="t">{{ tagVal(ev, "title") || "Untitled" }}</strong>
@@ -20,7 +20,7 @@ defineProps({ ev: Object });
 </template>
 
 <style scoped>
-.card {
+.cardbox {
   background: var(--media-bg);
   color: var(--media-ink);
   border-radius: var(--r-lg);

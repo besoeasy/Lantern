@@ -20,7 +20,7 @@ function onPublished() {
     <Composer v-if="user.pubkey" @published="onPublished" />
 
     <!-- Long-form went to its own screen with a Markdown editor and preview. -->
-    <RouterLink v-if="user.pubkey" to="/write" class="toblog">
+    <RouterLink v-if="user.pubkey" to="/write" class="toblog cardbox">
       <FileText />
       <span>Writing a longer piece?</span>
       <strong>Open the editor</strong>
@@ -37,17 +37,13 @@ function onPublished() {
   display: flex;
   align-items: center;
   gap: 9px;
-  background: var(--card);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow);
-  padding: 13px 15px;
   color: var(--ink-2);
   text-decoration: none;
   font-size: 13px;
-  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+  padding: 13px 15px;
+  transition: color var(--dur) var(--ease);
 }
 .toblog:hover {
-  border-color: var(--line-strong);
   color: var(--ink);
 }
 .toblog svg {

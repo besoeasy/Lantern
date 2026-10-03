@@ -92,7 +92,7 @@ let copyTimer;
       <p>Account, originless upload servers and Nostr relays. Saved in this browser only.</p>
     </header>
 
-    <section class="card">
+    <section class="cardbox">
       <div class="title">
         <KeyRound />
         <h2>Account</h2>
@@ -131,7 +131,7 @@ let copyTimer;
       </p>
     </section>
 
-    <section class="card">
+    <section class="cardbox">
       <div class="title">
         <Server />
         <h2>Originless servers</h2>
@@ -169,7 +169,7 @@ let copyTimer;
       <p v-if="copy" class="note">{{ copy }}</p>
     </section>
 
-    <section class="card">
+    <section class="cardbox">
       <div class="title">
         <Radio />
         <h2>Nostr relays</h2>
@@ -209,14 +209,14 @@ let copyTimer;
       </ServerList>
     </section>
 
-    <section class="card foot">
+    <section class="cardbox foot">
       <button class="reset" @click="s.reset()"><RotateCcw /><span>Reset to defaults</span></button>
       <p class="sub">
         Your posts, uploads and cache are not affected. Only relay and server lists reset.
       </p>
     </section>
 
-    <section class="card about">
+    <section class="cardbox about">
       <div class="title">
         <CodeXml />
         <h2>About Lantern</h2>
@@ -251,12 +251,6 @@ let copyTimer;
   margin: 4px 0 0;
   font-size: 13px;
   color: var(--ink-2);
-}
-.card {
-  background: var(--surface);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow);
-  padding: 17px;
 }
 .title {
   display: flex;

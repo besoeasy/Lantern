@@ -101,7 +101,7 @@ onUnmounted(() => sub?.close?.());
     />
 
     <template v-if="pk">
-      <section v-if="loadingProfile" class="card skeleton">
+      <section v-if="loadingProfile" class="cardbox skeleton">
         <div class="banner sk"></div>
         <div class="who">
           <div class="avatar sk"></div>
@@ -111,7 +111,7 @@ onUnmounted(() => sub?.close?.());
           </div>
         </div>
       </section>
-      <section v-else class="card">
+      <section v-else class="cardbox">
         <div class="banner">
           <img v-if="bannerUrl" :src="bannerUrl" alt="" />
           <div v-else class="banner-fallback"></div>
@@ -169,11 +169,9 @@ onUnmounted(() => sub?.close?.());
   display: grid;
   gap: 12px;
 }
-.card {
-  background: var(--surface);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow);
+.cardbox {
   overflow: hidden;
+  padding: 0;
 }
 .banner img {
   width: 100%;

@@ -109,7 +109,7 @@ function reset() {
     <LoginPrompt ignore-signer title="Sign in to publish" subtitle="Use an extension or a key to write." />
 
     <template v-if="user.pubkey">
-      <section class="card">
+      <section class="cardbox">
         <div class="head">
           <FileText class="ico" />
           <input
@@ -173,13 +173,10 @@ function reset() {
   display: grid;
   gap: 12px;
 }
-.card {
-  background: var(--card);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow);
-  padding: 14px;
+.cardbox {
   display: grid;
   gap: 9px;
+  padding: 14px;
 }
 .head {
   display: flex;

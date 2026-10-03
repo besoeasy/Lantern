@@ -8,7 +8,7 @@ defineProps({ ev: Object });
 </script>
 
 <template>
-  <article class="card">
+  <article class="cardbox">
     <div class="row">
       <div class="avatar">{{ initialOf(ev.pubkey) }}</div>
       <div class="meta">
@@ -28,7 +28,7 @@ defineProps({ ev: Object });
 </template>
 
 <style scoped>
-.card {
+.cardbox {
   background: var(--surface);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
