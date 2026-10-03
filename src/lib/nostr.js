@@ -48,7 +48,7 @@ function minePow(template, target) {
       ev.id = id;
       return ev;
     }
-    if (nonce > 500000) throw new Error("POW mining gave up (500k iters)");
+    if (nonce > 5000000) throw new Error("POW mining gave up (5M iters)");
   }
 }
 

@@ -51,7 +51,7 @@ renders, so the allow-list cannot be tightened into uselessness.
 | Test | Claim |
 | --- | --- |
 | new account | The sign-in prompt creates an account and offers the nsec once |
-| note reaches relay | Signed kind 1, valid signature, `client=lantern`, ≥5 bits POW, 3-year expiry |
+| note reaches relay | Signed kind 1, valid signature, `client=lantern`, ≥16 bits POW, 3-year expiry |
 | readable after reload | Post returns after a reload with IndexedDB wiped, so it came off the wire |
 | existing nsec | A pasted key signs in silently and signs as itself |
 | bad nsec | Rejected with a readable message, nothing stored |

@@ -17,7 +17,7 @@ const pk = getPublicKey(utils.hexToBytes(sk));
 
 function mine(template, target) {
   const ev = { ...template, tags: [...template.tags] };
-  for (let nonce = 1; nonce < 500000; nonce++) {
+  for (let nonce = 1; nonce < 5000000; nonce++) {
     ev.tags = ev.tags.filter(([t]) => t !== "nonce");
     ev.tags.push(["nonce", String(nonce), String(target)]);
     const id = getEventHash(ev);
@@ -51,7 +51,7 @@ const signed = finalizeEvent(
       tags: [["client", "lantern"], ["expiration", "9999999999"]],
       pubkey: pk,
     },
-    5,
+    16,
   ),
   utils.hexToBytes(sk),
 );
@@ -99,7 +99,7 @@ const noPowAccepted = await Promise.all(pool.publish([relay.url], noPow)).then(
   () => false,
 );
 await new Promise((r) => setTimeout(r, 200));
-ok(!noPowAccepted, "publish rejected for an event under 5 bits of POW");
+ok(!noPowAccepted, "publish rejected for an event under 16 bits of POW");
 ok(relay.rejected.some((r) => r.reason === "low-pow"), "relay logged a low-pow rejection");
 
 console.log("\nquery it back");
@@ -133,7 +133,7 @@ const second = finalizeEvent(
       tags: [["client", "lantern"], ["expiration", "9999999999"]],
       pubkey: pk,
     },
-    5,
+    16,
   ),
   utils.hexToBytes(sk),
 );

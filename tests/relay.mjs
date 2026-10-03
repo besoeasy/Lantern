@@ -10,7 +10,7 @@
 import { WebSocketServer } from "ws";
 import { verifyEvent } from "nostr-tools";
 
-const POW_BITS = 5;
+const POW_BITS = 16;
 
 function countLeadingZeroBits(hex) {
   let bits = 0;

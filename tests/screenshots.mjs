@@ -26,9 +26,9 @@ const secretBytes = utils.hexToBytes(sk);
 const { getPublicKey } = await import("nostr-tools");
 const pk = getPublicKey(secretBytes);
 
-function minePow(template, target = 5) {
+function minePow(template, target = 16) {
   const ev = { ...template, tags: [...template.tags] };
-  for (let nonce = 1; nonce < 500000; nonce++) {
+  for (let nonce = 1; nonce < 5000000; nonce++) {
     ev.tags = ev.tags.filter(([t]) => t !== "nonce");
     ev.tags.push(["nonce", String(nonce), String(target)]);
     let bits = 0;
@@ -94,7 +94,7 @@ electricity per event, while you pay it once.
 
 ## The economics
 
-Mining five bits takes about 32 hashes on average. That is nothing on a modern
+Mining sixteen bits takes about 65,536 hashes on average. That is nothing on a modern
 phone — you would never notice it — but multiply it by a million events and it
 becomes a real bill for whoever is automating the posting.
 
@@ -107,7 +107,7 @@ about a well-funded attacker who decides the electricity is worth it.
 
 \`\`\`js
 const bits = countLeadingZeroBits(getEventHash(event));
-if (bits < 5) throw new Error("not enough work");
+if (bits < 16) throw new Error("not enough work");
 \`\`\`
 
 A table, because the editor supports them:

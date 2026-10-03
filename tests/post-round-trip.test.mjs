@@ -144,7 +144,7 @@ try {
       ok(verifyEvent(stored), "the signature the relay received verifies");
       ok(stored.pubkey === pubkey, "signed by the key that created the account");
       ok(stored.tags.some(([t, v]) => t === "client" && v === "lantern"), "carries the lantern client tag");
-      ok(powBits(stored.id) >= 5, `event id carries >= 5 bits of POW (got ${powBits(stored.id)})`);
+      ok(powBits(stored.id) >= 16, `event id carries >= 16 bits of POW (got ${powBits(stored.id)})`);
 
       // plan.md: NIP-40 expiry 3 years out.
       const exp = Number(stored.tags.find(([t]) => t === "expiration")?.[1]);

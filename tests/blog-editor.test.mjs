@@ -38,10 +38,10 @@ async function createAccount(page) {
   return page.evaluate(() => localStorage.getItem("lantern.key.v1"));
 }
 
-/** POW-mines a template: the test relay enforces the same 5-bit floor. */
-function minePow(template, target = 5) {
+/** POW-mines a template: the test relay enforces the same 16-bit floor. */
+function minePow(template, target = 16) {
   const ev = { ...template, tags: [...template.tags] };
-  for (let nonce = 1; nonce < 500000; nonce++) {
+  for (let nonce = 1; nonce < 5000000; nonce++) {
     ev.tags = ev.tags.filter(([t]) => t !== "nonce");
     ev.tags.push(["nonce", String(nonce), String(target)]);
     let bits = 0;
