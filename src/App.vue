@@ -16,27 +16,49 @@ onMounted(() => user.autoLogin());
 </script>
 
 <template>
-  <div class="shell">
-    <main class="main">
-      <RouterView :key="route.fullPath" />
-    </main>
-    <nav class="tabs">
-      <RouterLink to="/" class="tab" :class="{ on: isHome }">
-        <House />
-        <span>Home</span>
-      </RouterLink>
-      <RouterLink to="/compose" class="tab create" title="Create" :class="{ on: route.name === 'compose' }">
-        <span class="plus"><Plus /></span>
-      </RouterLink>
-      <RouterLink to="/profile" class="tab" :class="{ on: route.name === 'profile' }">
-        <User />
-        <span>Profile</span>
-      </RouterLink>
-      <RouterLink to="/settings" class="tab" :class="{ on: route.name === 'settings' }">
-        <Settings />
-        <span>Settings</span>
-      </RouterLink>
-    </nav>
+  <div class="page">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <RouterLink to="/" class="brand" aria-label="Lantern home">
+          <span class="brand-dot" aria-hidden="true"></span>
+          <span>Lantern</span>
+        </RouterLink>
+        <nav class="tabs" aria-label="Primary">
+          <RouterLink to="/" class="tab" :class="{ on: isHome }" aria-label="Home">
+            <House />
+            <span class="tab-label">Home</span>
+          </RouterLink>
+          <RouterLink
+            to="/compose"
+            class="tab create"
+            title="Create"
+            aria-label="Create"
+            :class="{ on: route.name === 'compose' }"
+          >
+            <Plus />
+            <span class="tab-label">Create</span>
+          </RouterLink>
+          <RouterLink to="/profile" class="tab" :class="{ on: route.name === 'profile' }" aria-label="Profile">
+            <User />
+            <span class="tab-label">Profile</span>
+          </RouterLink>
+          <RouterLink
+            to="/settings"
+            class="tab"
+            :class="{ on: route.name === 'settings' }"
+            aria-label="Settings"
+          >
+            <Settings />
+            <span class="tab-label">Settings</span>
+          </RouterLink>
+        </nav>
+      </div>
+    </header>
+    <div class="shell">
+      <main class="main">
+        <RouterView :key="route.fullPath" />
+      </main>
+    </div>
   </div>
 </template>
 
@@ -190,85 +212,109 @@ body {
     scroll-behavior: auto !important;
   }
 }
-.shell {
-  max-width: 620px;
-  margin: 0 auto;
-  min-height: 100vh;
-  padding-bottom: calc(96px + env(safe-area-inset-bottom));
-}
-.main {
-  padding: 16px 16px 0;
-}
-.tabs {
-  position: fixed;
-  bottom: calc(16px + env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 32px);
-  max-width: 572px;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   background: color-mix(in srgb, var(--surface) 82%, transparent);
   backdrop-filter: saturate(1.8) blur(24px);
   -webkit-backdrop-filter: saturate(1.8) blur(24px);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-lg);
-  padding: 7px 8px;
-  z-index: 20;
+  border-bottom: 1px solid var(--line);
+  padding-top: env(safe-area-inset-top);
+}
+.topbar-inner {
+  max-width: 620px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 16px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.brand-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 70%, transparent);
+  flex: none;
+}
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 .tab {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 3px;
-  font-size: 10.5px;
+  gap: 6px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.01em;
   color: var(--ink-3);
   text-decoration: none;
-  padding: 6px 14px;
+  padding: 8px 12px;
   border-radius: var(--r-sm);
-  transition: color var(--dur) var(--ease);
+  white-space: nowrap;
+  transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
 .tab svg {
-  width: 23px;
-  height: 23px;
+  width: 20px;
+  height: 20px;
   stroke-width: 1.8;
   transition: transform var(--dur) var(--ease);
 }
 .tab.on {
   color: var(--ink);
-}
-/* The icon carries the active state; the label is too small to tint reliably. */
-.tab.on svg {
-  transform: translateY(-1px);
+  background: var(--surface-sunken);
 }
 .tab:active svg {
   transform: scale(0.92);
 }
+/* Create reads as the one action button in the bar. */
 .tab.create {
-  padding: 0;
-}
-.plus {
-  width: 46px;
-  height: 46px;
-  display: grid;
-  place-items: center;
-  color: var(--ink-on-accent);
   background: var(--accent);
-  border-radius: 50%;
-  box-shadow: 0 6px 18px -6px color-mix(in srgb, var(--accent) 70%, transparent);
-  transition: transform var(--dur) var(--ease);
+  color: var(--ink-on-accent);
+  border-radius: var(--r-full);
+  padding: 8px 14px;
 }
-.plus svg {
-  width: 24px;
-  height: 24px;
+.tab.create svg {
+  width: 17px;
+  height: 17px;
   stroke-width: 2.4;
 }
-.tab.create:active .plus {
-  transform: scale(0.92);
+.tab.create:active {
+  transform: scale(0.96);
+}
+@media (max-width: 480px) {
+  .tab {
+    padding: 8px 10px;
+  }
+  .tab-label {
+    display: none;
+  }
+  .tab.create {
+    padding: 8px 12px;
+  }
+}
+.shell {
+  max-width: 620px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+.main {
+  padding: 16px 16px 32px;
 }
 
 /* The shared text-field look. Composer, comments, the sign-in box and the two
