@@ -10,6 +10,8 @@ export const DEFAULT_RELAYS = [
 
 export const CLIENT_TAG = "lantern";
 export const POW_TARGET = 5;
+// Only render posts whose id carries at least this much POW.
+export const MIN_POW = 2;
 // USP: nothing Lantern publishes lives forever. Every signed event carries a
 // NIP-40 `expiration` tag 3 years after creation; relays honor it by deleting.
 export const CONTENT_TTL_SECONDS = 3 * 365 * 24 * 60 * 60;

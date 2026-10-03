@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
-import { subscribeFeed } from "@/lib/nostr.js";
+import { meetsPow, subscribeFeed } from "@/lib/nostr.js";
 import { FEED_KINDS, ensureRelays } from "@/lib/relays.js";
 import { getCachedFeed, pruneCache } from "@/lib/db.js";
 import { useEventList } from "@/composables/useEventList.js";
@@ -12,6 +12,7 @@ export const useFeedStore = defineStore("feed", () => {
     add,
     reset,
   } = useEventList({
+    guard: meetsPow,
     cap: 500,
   });
   let closer = null;

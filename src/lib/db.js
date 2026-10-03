@@ -1,5 +1,6 @@
 import Dexie from "dexie";
-import { tagVal } from "./event.js";
+import { powOf, tagVal } from "./event.js";
+import { MIN_POW } from "./relays.js";
 
 export const db = new Dexie("lantern");
 db.version(1).stores({
@@ -37,7 +38,7 @@ export async function getCachedFeed(kinds, limit = 100) {
     .where("created_at")
     .above(cutoff)
     .reverse()
-    .filter((ev) => (kinds?.length ? kinds.includes(ev.kind) : true) && !isExpired(ev))
+    .filter((ev) => (kinds?.length ? kinds.includes(ev.kind) : true) && !isExpired(ev) && powOf(ev) >= MIN_POW)
     .limit(limit)
     .toArray();
 }
@@ -50,7 +51,7 @@ export async function getCachedTag(tag, limit = 100) {
     .filter((ev) => (ev.tags || []).some(([t, v]) => t === "t" && v === tag))
     .toArray();
   return all
-    .filter((ev) => !isExpired(ev))
+    .filter((ev) => !isExpired(ev) && powOf(ev) >= MIN_POW)
     .sort((a, b) => b.created_at - a.created_at)
     .slice(0, limit);
 }
@@ -66,7 +67,8 @@ export async function getCachedAuthorPosts(pubkey, kinds, limit = 50) {
     .filter(
       (ev) =>
         (!kinds?.length || kinds.includes(ev.kind)) &&
-        !isExpired(ev),
+        !isExpired(ev) &&
+        powOf(ev) >= MIN_POW,
     )
     .sort((a, b) => b.created_at - a.created_at)
     .slice(0, limit);

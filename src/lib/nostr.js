@@ -1,6 +1,6 @@
 import { SimplePool, getEventHash } from "nostr-tools";
-import { CLIENT_TAG, POW_TARGET, FEED_KINDS, CONTENT_TTL_SECONDS, activeRelays, ensureRelays } from "./relays.js";
-import { tagVal, articleAddr } from "./event.js";
+import { CLIENT_TAG, POW_TARGET, FEED_KINDS, CONTENT_TTL_SECONDS, MIN_POW, activeRelays, ensureRelays } from "./relays.js";
+import { powOf, tagVal, articleAddr } from "./event.js";
 import { cacheEvent } from "./db.js";
 import { db } from "./db.js";
 import { getSigner } from "./signer.js";
@@ -30,6 +30,10 @@ function countLeadingZeroBits(hexId) {
     }
   }
   return bits;
+}
+
+export function meetsPow(ev, min = MIN_POW) {
+  return powOf(ev) >= min;
 }
 
 function minePow(template, target) {

@@ -2,7 +2,7 @@
 import { onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { BadgeCheck, BadgeX, Copy, Globe, Zap } from "@lucide/vue";
-import { getAuthorProfile, subscribeAuthorPosts } from "@/lib/nostr.js";
+import { getAuthorProfile, meetsPow, subscribeAuthorPosts } from "@/lib/nostr.js";
 import { npubOf, resolvePk, shortNpub, shortPk } from "@/lib/identity.js";
 import { verifyNip05 } from "@/lib/nip05.js";
 import { FEED_KINDS, ensureRelays } from "@/lib/relays.js";
@@ -27,7 +27,7 @@ const bannerUrl = ref("");
 const loadingProfile = ref(true);
 const loadingPosts = ref(true);
 const { copied: copiedNpub, copy: copyText } = useCopy();
-const { items: events, add, reset: resetEvents } = useEventList();
+const { items: events, add, reset: resetEvents } = useEventList({ guard: meetsPow });
 let sub = null;
 
 // Empty route id means "my own profile", which needs a session to resolve.

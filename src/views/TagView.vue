@@ -1,7 +1,7 @@
 <script setup>
 import { onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { subscribeTag } from "@/lib/nostr.js";
+import { meetsPow, subscribeTag } from "@/lib/nostr.js";
 import { ensureRelays } from "@/lib/relays.js";
 import { getCachedTag } from "@/lib/db.js";
 import { useEventList } from "@/composables/useEventList.js";
@@ -10,7 +10,7 @@ import PostList from "@/components/PostList.vue";
 
 const route = useRoute();
 const loading = ref(true);
-const { items: events, add, reset } = useEventList();
+const { items: events, add, reset } = useEventList({ guard: meetsPow });
 let sub = null;
 
 watch(

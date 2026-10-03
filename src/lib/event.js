@@ -1,3 +1,20 @@
+export function countLeadingZeroBitsHex(hexId) {
+  let bits = 0;
+  for (const ch of hexId) {
+    const n = parseInt(ch, 16);
+    if (Number.isNaN(n)) return bits;
+    for (let i = 3; i >= 0; i--) {
+      if ((n >> i) & 1) return bits;
+      bits++;
+    }
+  }
+  return bits;
+}
+
+export function powOf(ev) {
+  return ev?.id ? countLeadingZeroBitsHex(ev.id) : 0;
+}
+
 // Pure readers over an event's tags. No network or storage imports, so both
 // nostr.js and db.js can use these without creating an import cycle.
 
