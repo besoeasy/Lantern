@@ -154,7 +154,7 @@ function dismiss() {
   flex-shrink: 0;
   border: 0;
   background: var(--ink);
-  color: var(--ink-on-accent);
+  color: var(--on-ink);
   border-radius: var(--r-full);
   padding: 10px 20px;
   font-weight: 700;
@@ -226,7 +226,7 @@ function dismiss() {
   gap: 5px;
   border: 0;
   background: var(--ink);
-  color: var(--ink-on-accent);
+  color: var(--on-ink);
   border-radius: var(--r-xs);
   padding: 8px 14px;
   font-weight: 700;

@@ -132,7 +132,7 @@ async function react(emoji) {
   color: var(--ink-2);
 }
 .r.on .n {
-  color: var(--ink-on-accent);
+  color: var(--on-ink);
 }
 /* Every message this bar can show comes from useAsyncAction: either a publish
    failure or the sign-in refusal, so all of them are error-toned. */

@@ -66,7 +66,7 @@ function submit() {
   align-items: center;
   gap: 6px;
   background: var(--ink);
-  color: var(--ink-on-accent);
+  color: var(--on-ink);
   border: 0;
   border-radius: var(--r-sm);
   padding: 10px 14px;

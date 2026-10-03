@@ -216,7 +216,7 @@ onUnmounted(() => sub?.close?.());
   overflow: hidden;
   flex-shrink: 0;
   background: linear-gradient(135deg, var(--ink), var(--ink-3));
-  color: var(--ink-on-accent);
+  color: var(--on-ink);
   display: grid;
   place-items: center;
   font-size: 22px;

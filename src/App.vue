@@ -83,7 +83,8 @@ onMounted(() => user.autoLogin());
   --ink: #09090b;
   --ink-2: #52525b;
   --ink-3: #656565;
-  --ink-on-accent: #ffffff;
+  /* Text that sits on --ink buttons/avatars. */
+  --on-ink: #ffffff;
 
   /* Lines and rings. */
   --line: rgba(9, 9, 11, 0.09);
@@ -259,13 +260,13 @@ body {
 /* Create is the single solid button, the way Vercel uses a black CTA. */
 .tab.create {
   background: var(--ink);
-  color: var(--bg);
+  color: var(--on-ink);
   font-weight: 600;
   border-radius: var(--r-full);
   padding: 7px 13px;
 }
 .tab.create:hover {
-  color: var(--bg);
+  color: var(--on-ink);
   opacity: 0.88;
 }
 .tab.create::after {

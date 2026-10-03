@@ -282,7 +282,7 @@ function reset() {
   align-items: center;
   gap: 7px;
   background: var(--ink);
-  color: var(--ink-on-accent);
+  color: var(--on-ink);
   border: 0;
   border-radius: var(--r-full);
   padding: 10px 22px;

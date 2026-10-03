@@ -324,7 +324,7 @@ h2 {
 }
 .badge.last {
   background: var(--ink);
-  color: var(--ink-on-accent);
+  color: var(--on-ink);
 }
 .badge.custom {
   background: var(--info-bg);

@@ -85,7 +85,7 @@ textarea {
 }
 button {
   background: var(--ink);
-  color: var(--ink-on-accent);
+  color: var(--on-ink);
   border: 0;
   border-radius: var(--r-full);
   padding: 9px 16px;
