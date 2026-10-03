@@ -47,10 +47,15 @@ export async function signEvent(template) {
     created_at,
     content: template.content ?? "",
     tags: [
-      // Replace any caller-supplied client/expiration tags so every Lantern
-      // post carries one canonical id and a fixed 3-year expiry (NIP-40).
-      ...(template.tags || []).filter(([t]) => t !== "client" && t !== "expiration"),
+      // Replace any caller-supplied client/expiration/lantern tags so every
+      // Lantern post carries one canonical id and a fixed 3-year expiry (NIP-40).
+      ...(template.tags || []).filter(
+        ([t, v]) => t !== "client" && t !== "expiration" && !(t === "t" && v === CLIENT_TAG),
+      ),
       ["client", CLIENT_TAG],
+      // `t` is indexed by every relay; `client` is not, so the feed cannot
+      // rely on `#client` as a relay prefilter. This makes scoping work.
+      ["t", CLIENT_TAG],
       ["expiration", String(created_at + CONTENT_TTL_SECONDS)],
     ],
     // The signer is the source of truth for who signs, so a stale pubkey on
@@ -74,10 +79,7 @@ export async function publishEvent(signed) {
 }
 
 export function subscribeFeed(kinds, onEvent, limit = 100) {
-  // Relay-side prefilter keeps the global feed scoped to this client.
-  // Not every relay indexes single-letter generic tags like `client`,
-  // so callers must still drop non-Lantern events locally (see isLanternEvent / feed store).
-  const filter = { kinds, limit, "#client": [CLIENT_TAG] };
+  const filter = { kinds, limit, "#t": [CLIENT_TAG] };
   return pool.subscribeMany(activeRelays(), [filter], {
     onevent: (ev) => {
       if (!isLanternEvent(ev)) return;
@@ -94,7 +96,7 @@ export async function refreshRelays() {
 
 // Lantern-scoped tag timeline: relay prefilter plus local guards, same as the feed.
 export function subscribeTag(tag, onEvent, limit = 100) {
-  const filter = { kinds: FEED_KINDS, limit, "#t": [tag], "#client": [CLIENT_TAG] };
+  const filter = { kinds: FEED_KINDS, limit, "#t": [CLIENT_TAG] };
   return pool.subscribeMany(activeRelays(), [filter], {
     onevent: (ev) => {
       if (!isLanternEvent(ev)) return;
@@ -131,6 +133,7 @@ export { tagVal, expiryOf } from "./event.js";
 // not a user hashtag, so it is excluded there.
 export function displayHashtags(ev, limit = 4) {
   const skip = ev.kind === 36787 ? new Set(["music"]) : new Set();
+  skip.add(CLIENT_TAG);
   const all = [
     ...new Set(
       (ev.tags || [])
@@ -324,7 +327,7 @@ export async function getAuthorProfile(pubkey) {
 
 // Lantern-scoped author timeline.
 export function subscribeAuthorPosts(pubkey, onEvent, kinds = FEED_KINDS, limit = 50) {
-  const filter = { kinds, authors: [pubkey], "#client": [CLIENT_TAG], limit };
+  const filter = { kinds, authors: [pubkey], limit, "#t": [CLIENT_TAG] };
   return pool.subscribeMany(activeRelays(), [filter], {
     onevent: (ev) => {
       if (ev.pubkey !== pubkey) return;
