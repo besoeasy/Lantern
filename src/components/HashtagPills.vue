@@ -52,7 +52,6 @@ const tags = computed(() => displayHashtags(props.ev));
 .light .pill {
   font-size: 12px;
   color: var(--ink-2);
-  border: 1px solid var(--line);
   background: var(--surface);
   padding: 4px 12px;
   max-width: 160px;

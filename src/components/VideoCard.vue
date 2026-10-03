@@ -26,7 +26,6 @@ defineProps({ ev: Object });
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   padding: 14px;
-  border: 1px solid var(--media-line);
 }
 .head {
   display: flex;

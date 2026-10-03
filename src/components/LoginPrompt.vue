@@ -134,7 +134,6 @@ function dismiss() {
   align-items: center;
   gap: 12px;
   background: var(--surface);
-  border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   padding: 14px 16px;
@@ -168,7 +167,6 @@ function dismiss() {
 .ways {
   margin-top: 8px;
   background: var(--surface);
-  border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   padding: 13px 14px;
@@ -181,7 +179,6 @@ function dismiss() {
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid var(--line);
   border-radius: var(--r-sm);
   padding: 6px 6px 6px 10px;
   background: var(--surface);
@@ -251,7 +248,6 @@ function dismiss() {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
   border-radius: var(--r-sm);
@@ -286,7 +282,7 @@ function dismiss() {
 .fresh {
   margin-top: 8px;
   background: var(--accent-soft);
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  
   border-radius: var(--r-lg);
   padding: 13px 14px;
   display: grid;
@@ -314,7 +310,7 @@ function dismiss() {
   line-height: 1.55;
   color: var(--danger);
   background: var(--danger-bg);
-  border: 1px solid var(--danger-line);
+  background: var(--danger-bg);
   border-radius: var(--r-sm);
   padding: 10px 13px;
   margin: 8px 0 0;

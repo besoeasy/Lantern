@@ -150,7 +150,7 @@ function copyShare() {
   gap: 7px;
   max-width: 100%;
   background: var(--surface);
-  border: 1px dashed var(--line-strong);
+  background: var(--surface-sunken);
   border-radius: var(--r-full);
   box-shadow: var(--shadow-sm);
   padding: 8px 14px;
@@ -161,7 +161,6 @@ function copyShare() {
   transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 .share:hover {
-  border-style: solid;
   border-color: var(--ink-3);
   color: var(--ink);
 }
@@ -191,7 +190,6 @@ function copyShare() {
   font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--ink-2);
-  border: 1px solid var(--line);
   background: var(--surface);
   padding: 6px 14px;
   border-radius: var(--r-full);
@@ -219,7 +217,6 @@ function copyShare() {
 }
 .raw {
   background: var(--surface);
-  border: 1px solid var(--line);
   border-radius: var(--r-md);
   box-shadow: var(--shadow);
   overflow: hidden;
@@ -229,7 +226,6 @@ function copyShare() {
   justify-content: space-between;
   align-items: center;
   padding: 8px 10px 8px 14px;
-  border-bottom: 1px solid var(--line);
 }
 .raw-label {
   font-size: 12px;
@@ -244,7 +240,6 @@ function copyShare() {
   gap: 6px;
   font-size: 12px;
   font-weight: 600;
-  border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink-2);
   padding: 7px 14px;

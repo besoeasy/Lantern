@@ -64,7 +64,6 @@ async function submit() {
 <style scoped>
 .comments {
   background: var(--surface);
-  border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   padding: 16px;
@@ -94,7 +93,6 @@ button {
   cursor: pointer;
 }
 .c {
-  border-top: 1px solid var(--line);
   padding-top: 10px;
   font-size: 14px;
 }

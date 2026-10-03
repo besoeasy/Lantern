@@ -77,14 +77,12 @@ const body = computed(() => withoutTitleHeading(props.ev?.content, title.value))
    here than on margins. */
 .reader {
   background: var(--card);
-  border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
 header {
   padding: 22px 24px 18px;
-  border-bottom: 1px solid var(--line);
 }
 .k {
   font-size: 10.5px;
@@ -147,7 +145,6 @@ h1 {
   font-size: 12.5px;
   color: var(--ink-3);
   background: var(--surface-2);
-  border-bottom: 1px solid var(--line);
 }
 .body {
   padding: 22px 24px 26px;

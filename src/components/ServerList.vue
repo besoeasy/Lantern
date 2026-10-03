@@ -50,7 +50,6 @@ function submit() {
   align-items: center;
   gap: 8px;
   padding: 9px 11px;
-  border: 1px solid var(--line);
   border-radius: var(--r-sm);
   background: var(--surface);
 }

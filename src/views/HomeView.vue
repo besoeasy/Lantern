@@ -84,7 +84,6 @@ onUnmounted(() => feed.stop());
   background: color-mix(in srgb, var(--surface) 86%, transparent);
   backdrop-filter: saturate(1.6) blur(16px);
   -webkit-backdrop-filter: saturate(1.6) blur(16px);
-  border-bottom: 1px solid var(--line);
   scrollbar-width: none;
 }
 .pills::-webkit-scrollbar {
@@ -93,7 +92,6 @@ onUnmounted(() => feed.stop());
 .pills button {
   flex-shrink: 0;
   border: 0;
-  border-bottom: 2px solid transparent;
   background: transparent;
   padding: 8px 11px;
   cursor: pointer;
@@ -102,13 +100,12 @@ onUnmounted(() => feed.stop());
   color: var(--ink-3);
   text-transform: capitalize;
   white-space: nowrap;
-  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  transition: color var(--dur) var(--ease);
 }
 .pills button:hover {
   color: var(--ink-2);
 }
 .pills button.on {
   color: var(--ink);
-  border-bottom-color: var(--accent);
 }
 </style>

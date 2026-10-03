@@ -27,7 +27,6 @@ defineProps({ ev: Object });
 <style scoped>
 .card {
   background: var(--surface);
-  border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   overflow: hidden;

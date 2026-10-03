@@ -97,8 +97,9 @@ const html = computed(() => renderMarkdown(props.source));
 
 .md :deep(blockquote) {
   margin: 1.2em 0;
-  padding: 2px 0 2px 16px;
-  border-left: 3px solid var(--accent);
+  padding: 8px 0 8px 16px;
+  background: var(--accent-soft);
+  border-radius: 0 var(--r-xs) var(--r-xs) 0;
   color: var(--ink-2);
   font-style: italic;
 }
@@ -107,15 +108,13 @@ const html = computed(() => renderMarkdown(props.source));
   font-family: var(--font-mono);
   font-size: 0.88em;
   background: var(--surface-sunken);
-  border: 1px solid var(--line);
   border-radius: var(--r-xs);
   padding: 0.1em 0.35em;
 }
 .md :deep(pre) {
   margin: 1.2em 0;
   padding: 14px 15px;
-  background: var(--surface-2);
-  border: 1px solid var(--line);
+  background: var(--surface-sunken);
   border-radius: var(--r-md);
   overflow-x: auto;
   line-height: 1.55;
@@ -139,7 +138,7 @@ const html = computed(() => renderMarkdown(props.source));
 .md :deep(hr) {
   margin: 1.8em 0;
   border: 0;
-  border-top: 1px solid var(--line);
+  height: 12px;
 }
 
 .md :deep(table) {
@@ -152,12 +151,14 @@ const html = computed(() => renderMarkdown(props.source));
 }
 .md :deep(th),
 .md :deep(td) {
-  border: 1px solid var(--line);
   padding: 7px 10px;
   text-align: left;
 }
+.md :deep(tr + tr td) {
+  border-top: 1px solid var(--surface-sunken);
+}
 .md :deep(th) {
-  background: var(--surface-2);
+  background: var(--surface-sunken);
   font-weight: 700;
 }
 </style>

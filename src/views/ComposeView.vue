@@ -38,7 +38,6 @@ function onPublished() {
   align-items: center;
   gap: 9px;
   background: var(--card);
-  border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   padding: 13px 15px;

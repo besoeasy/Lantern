@@ -254,7 +254,6 @@ let copyTimer;
 }
 .card {
   background: var(--surface);
-  border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   padding: 17px;
@@ -347,7 +346,6 @@ h2 {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid var(--line);
   background: var(--surface-2);
   border-radius: var(--r-full);
   padding: 6px 12px;
@@ -377,7 +375,7 @@ h2 {
   border-radius: var(--r-sm);
   padding: 10px 12px;
   margin: 8px 0 0;
-  border: 1px solid transparent;
+  background: var(--accent-soft);
 }
 .notice.warn {
   color: var(--accent);
@@ -398,7 +396,6 @@ h2 {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink-2);
   border-radius: var(--r-xs);
@@ -455,7 +452,7 @@ h2 {
   height: 24px;
   border-radius: var(--r-full);
   background: var(--surface-sunken);
-  border: 1px solid var(--line-strong);
+  background: var(--surface-sunken);
   display: block;
   position: relative;
   transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
@@ -492,7 +489,6 @@ h2 {
   align-items: center;
   gap: 7px;
   justify-self: start;
-  border: 1px solid var(--line);
   background: transparent;
   color: var(--ink);
   border-radius: var(--r-sm);
@@ -526,7 +522,6 @@ h2 {
   font-weight: 600;
   color: var(--ink);
   text-decoration: none;
-  border: 1px solid var(--line);
   border-radius: var(--r-sm);
   padding: 9px 15px;
   font-family: var(--font-mono);

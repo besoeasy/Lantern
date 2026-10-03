@@ -175,7 +175,6 @@ function reset() {
 }
 .card {
   background: var(--card);
-  border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   padding: 14px;
@@ -235,7 +234,7 @@ function reset() {
 .cover {
   display: inline-flex;
   align-items: center;
-  border: 1px dashed var(--line-strong);
+  background: var(--surface-sunken);
   border-radius: var(--r-sm);
   padding: 0 15px;
   font-size: 12.5px;
@@ -246,10 +245,8 @@ function reset() {
 }
 .cover:hover {
   color: var(--ink);
-  border-style: solid;
 }
 .cover.set {
-  border-style: solid;
   color: var(--success);
 }
 .foot {
@@ -264,7 +261,6 @@ function reset() {
   gap: 8px;
 }
 .ghost {
-  border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink-2);
   border-radius: var(--r-full);

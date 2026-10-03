@@ -343,7 +343,6 @@ async function submit() {
 <style scoped>
 .composer {
   background: var(--surface);
-  border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   padding: 12px;
@@ -412,7 +411,6 @@ async function submit() {
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1px dashed var(--line);
   border-radius: var(--r-md);
   padding: 10px 13px;
   margin-bottom: 8px;
@@ -423,7 +421,6 @@ async function submit() {
 }
 .coverpick:hover {
   color: var(--ink);
-  border-style: solid;
 }
 .coverpick svg {
   width: 16px;
@@ -447,7 +444,6 @@ async function submit() {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  border: 1px solid var(--line);
   border-radius: var(--r-sm);
   padding: 8px 11px;
   margin-bottom: 8px;
@@ -464,7 +460,6 @@ async function submit() {
   align-items: center;
   gap: 4px;
   background: var(--surface-sunken);
-  border: 1px solid var(--line);
   border-radius: var(--r-full);
   padding: 3px 6px 3px 10px;
   font-size: 12.5px;

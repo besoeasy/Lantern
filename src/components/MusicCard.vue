@@ -77,7 +77,6 @@ const metaLine = computed(() => {
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   padding: 16px;
-  border: 1px solid var(--media-line);
 }
 .stack {
   border-radius: var(--r-sm);

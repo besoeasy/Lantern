@@ -184,7 +184,6 @@ body {
   background: color-mix(in srgb, var(--bg) 80%, transparent);
   backdrop-filter: saturate(1.6) blur(16px);
   -webkit-backdrop-filter: saturate(1.6) blur(16px);
-  border-bottom: 1px solid var(--line);
   padding-top: env(safe-area-inset-top);
 }
 .topbar-inner {
@@ -246,17 +245,6 @@ body {
 .tab.on {
   color: var(--ink);
 }
-/* Vercel uses a small underline for the current section. */
-.tab.on::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--ink);
-}
 /* Create is the single solid button, the way Vercel uses a black CTA. */
 .tab.create {
   background: var(--ink);
@@ -302,7 +290,7 @@ body {
    styles meant they had to be copied into every one. */
 .field {
   width: 100%;
-  border: 1px solid var(--line);
+  
   border-radius: var(--r-sm);
   padding: 10px 12px;
   font-size: 13.5px;

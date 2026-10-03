@@ -72,12 +72,10 @@ function retry() {
 .err {
   color: var(--ink-3);
   background: var(--surface-2);
-  border: 1px dashed var(--line);
   padding: 20px;
   gap: 10px;
 }
 .retry {
-  border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
   border-radius: var(--r-full);

@@ -176,9 +176,9 @@ function applyAction({ wrap, suffix = "", prefix }) {
 
 <style scoped>
 .mded {
-  border: 1px solid var(--line);
   border-radius: var(--r-lg);
   background: var(--surface);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 .bar {
@@ -187,7 +187,6 @@ function applyAction({ wrap, suffix = "", prefix }) {
   justify-content: space-between;
   gap: 10px;
   padding: 8px 10px;
-  border-bottom: 1px solid var(--line);
   background: var(--surface-2);
 }
 .modes {
@@ -240,7 +239,7 @@ function applyAction({ wrap, suffix = "", prefix }) {
   min-width: 0;
 }
 .mded.split .pane.write {
-  border-right: 1px solid var(--line);
+  border-right: 1px solid var(--surface-sunken);
 }
 .pane.view {
   padding: 4px 2px;

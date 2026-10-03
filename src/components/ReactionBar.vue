@@ -90,8 +90,6 @@ async function react(emoji) {
   margin-top: -1px;
   padding: 3px 10px 10px;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-top: 0;
   border-radius: 0 0 var(--r-lg) var(--r-lg);
 }
 .r {
@@ -100,7 +98,6 @@ async function react(emoji) {
   gap: 5px;
   font-size: 14px;
   line-height: 1;
-  border: 1px solid var(--line);
   background: var(--surface);
   padding: 6px 12px;
   border-radius: var(--r-full);

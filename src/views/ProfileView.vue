@@ -171,7 +171,6 @@ onUnmounted(() => sub?.close?.());
 }
 .card {
   background: var(--surface);
-  border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   overflow: hidden;
@@ -255,7 +254,6 @@ onUnmounted(() => sub?.close?.());
   font-weight: 600;
   font-family: var(--font-mono);
   color: var(--ink-2);
-  border: 1px solid var(--line);
   background: var(--surface-2);
   padding: 6px 12px;
   border-radius: var(--r-full);
@@ -278,7 +276,6 @@ onUnmounted(() => sub?.close?.());
   line-height: 1.6;
   color: var(--ink-3);
   background: var(--surface-2);
-  border: 1px dashed var(--line);
   border-radius: var(--r-sm);
   padding: 11px 13px;
 }

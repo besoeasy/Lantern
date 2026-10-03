@@ -30,7 +30,6 @@ const lead = computed(() => (summary.value ? "" : excerpt(props.ev?.content, 180
 <style scoped>
 .card {
   background: var(--article-bg);
-  border: 1px solid var(--article-line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow);
   padding: 18px;
