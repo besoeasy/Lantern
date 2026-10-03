@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { Braces, Copy, Hourglass, Link2 } from "@lucide/vue";
+import { Braces, Copy, ExternalLink, Hourglass, Link2 } from "@lucide/vue";
 import { getEventById, expiryOf } from "@/lib/nostr.js";
 import { countdownText } from "@/lib/format.js";
 import { readingMinutes } from "@/lib/markdown.js";
@@ -76,6 +76,10 @@ function shareUrl() {
   return `${location.origin}${location.pathname}#/post/${route.params.id}`;
 }
 
+const njumpUrl = computed(
+  () => `https://njump.me/${ev.value?.id || route.params.id}`,
+);
+
 const { copied, copy: copyText } = useCopy();
 const { copied: copiedShare, copy: copyUrl } = useCopy();
 
@@ -111,6 +115,10 @@ function copyShare() {
           <Hourglass />
           <span>{{ expiryText }}</span>
         </div>
+        <a class="njump" :href="njumpUrl" target="_blank" rel="noopener noreferrer">
+          <ExternalLink />
+          <span>Open in njump</span>
+        </a>
         <button class="raw-toggle" @click="showRaw = !showRaw">
           <Braces />
           <span>{{ showRaw ? "Hide raw JSON" : "Raw JSON" }}</span>
@@ -229,7 +237,8 @@ function copyShare() {
   color: var(--ink-2);
 }
 .raw-toggle,
-.raw-copy {
+.raw-copy,
+.njump {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -245,15 +254,20 @@ function copyShare() {
     border-color var(--dur) var(--ease);
 }
 .raw-toggle:hover,
-.raw-copy:hover {
+.raw-copy:hover,
+.njump:hover {
   border-color: var(--line-strong);
   color: var(--ink);
 }
 .raw-toggle svg,
-.raw-copy svg {
+.raw-copy svg,
+.njump svg {
   width: 14px;
   height: 14px;
   stroke-width: 1.9;
+}
+.njump {
+  text-decoration: none;
 }
 .raw-body {
   margin: 0;
