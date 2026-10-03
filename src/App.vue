@@ -24,9 +24,8 @@ onMounted(() => user.autoLogin());
           <span>Lantern</span>
         </RouterLink>
         <nav class="tabs" aria-label="Primary">
-          <RouterLink to="/" class="tab" :class="{ on: isHome }" aria-label="Home">
+          <RouterLink to="/" class="tab" :class="{ on: isHome }" aria-label="Home" title="Home">
             <House />
-            <span class="tab-label">Home</span>
           </RouterLink>
           <RouterLink
             to="/compose"
@@ -36,20 +35,24 @@ onMounted(() => user.autoLogin());
             :class="{ on: route.name === 'compose' }"
           >
             <Plus />
-            <span class="tab-label">Create</span>
           </RouterLink>
-          <RouterLink to="/profile" class="tab" :class="{ on: route.name === 'profile' }" aria-label="Profile">
+          <RouterLink
+            to="/profile"
+            class="tab"
+            :class="{ on: route.name === 'profile' }"
+            aria-label="Profile"
+            title="Profile"
+          >
             <User />
-            <span class="tab-label">Profile</span>
           </RouterLink>
           <RouterLink
             to="/settings"
             class="tab"
             :class="{ on: route.name === 'settings' }"
             aria-label="Settings"
+            title="Settings"
           >
             <Settings />
-            <span class="tab-label">Settings</span>
           </RouterLink>
         </nav>
       </div>
@@ -271,8 +274,8 @@ body {
   transition: color var(--dur) var(--ease);
 }
 .tab svg {
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
   stroke-width: 1.8;
 }
 .tab:hover {
@@ -308,19 +311,16 @@ body {
   display: none;
 }
 .tab.create svg {
-  width: 13px;
-  height: 13px;
+  width: 15px;
+  height: 15px;
   stroke-width: 2.2;
 }
 @media (max-width: 480px) {
   .tabs {
-    gap: 12px;
+    gap: 14px;
   }
   .tab {
-    padding: 8px 1px;
-  }
-  .tab-label {
-    display: none;
+    padding: 8px 2px;
   }
   .tab.create {
     padding: 7px 11px;
