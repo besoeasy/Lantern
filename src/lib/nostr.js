@@ -79,10 +79,11 @@ export async function publishEvent(signed) {
 }
 
 export function subscribeFeed(kinds, onEvent, limit = 100) {
-  const filter = { kinds, limit, "#t": [CLIENT_TAG] };
+  // No client-tag scoping: subscribe to the firehose for these kinds and let
+  // every event through. `limit` keeps the initial burst bounded.
+  const filter = { kinds, limit };
   return pool.subscribeMany(activeRelays(), [filter], {
     onevent: (ev) => {
-      if (!isLanternEvent(ev)) return;
       cacheEvent(ev);
       onEvent?.(ev);
     },
@@ -96,10 +97,10 @@ export async function refreshRelays() {
 
 // Lantern-scoped tag timeline: relay prefilter plus local guards, same as the feed.
 export function subscribeTag(tag, onEvent, limit = 100) {
-  const filter = { kinds: FEED_KINDS, limit, "#t": [CLIENT_TAG] };
+  const filter = { kinds: FEED_KINDS, limit, "#t": [tag] };
   return pool.subscribeMany(activeRelays(), [filter], {
     onevent: (ev) => {
-      if (!isLanternEvent(ev)) return;
+      // Relays routinely ignore tag filters — verify locally.
       if (!(ev.tags || []).some(([t, v]) => t === "t" && v === tag)) return;
       cacheEvent(ev);
       onEvent?.(ev);
@@ -327,11 +328,10 @@ export async function getAuthorProfile(pubkey) {
 
 // Lantern-scoped author timeline.
 export function subscribeAuthorPosts(pubkey, onEvent, kinds = FEED_KINDS, limit = 50) {
-  const filter = { kinds, authors: [pubkey], limit, "#t": [CLIENT_TAG] };
+  const filter = { kinds, authors: [pubkey], limit };
   return pool.subscribeMany(activeRelays(), [filter], {
     onevent: (ev) => {
       if (ev.pubkey !== pubkey) return;
-      if (!isLanternEvent(ev)) return;
       cacheEvent(ev);
       onEvent?.(ev);
     },

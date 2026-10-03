@@ -7,7 +7,7 @@ import { ref } from "vue";
 //
 // order: "desc" newest first (feeds), "asc" oldest first (comments),
 //        null to keep arrival order (reactions).
-// guard: optional extra rejection, e.g. only Lantern-branded events.
+// guard: optional extra rejection filter.
 // cap:   optional max length; the tail is dropped, so pair it with a sort.
 export function useEventList({ order = "desc", guard = null, cap = 0 } = {}) {
   const items = ref([]);

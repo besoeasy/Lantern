@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
-import { isLanternEvent, subscribeFeed } from "@/lib/nostr.js";
+import { subscribeFeed } from "@/lib/nostr.js";
 import { FEED_KINDS, ensureRelays } from "@/lib/relays.js";
 import { getCachedFeed, pruneCache } from "@/lib/db.js";
 import { useEventList } from "@/composables/useEventList.js";
@@ -12,9 +12,6 @@ export const useFeedStore = defineStore("feed", () => {
     add,
     reset,
   } = useEventList({
-    // Defense in depth: relays may ignore the `#client` filter, and the Dexie
-    // cache still holds pre-filter posts. Only this client id renders.
-    guard: isLanternEvent,
     cap: 500,
   });
   let closer = null;
